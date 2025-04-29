@@ -34,55 +34,6 @@ class Selector:
 
 @dataclass
 class CPFDetailsSelector:
-    received_resources: str = "[aria-controls='accordion-recebimentos-recursos']"
-    """
-    Seletor do container com os dados de recebimentos de recursos
-    """
-
-    inactivity: str = "[aria-controls='accordion-inatividade']"
-    """
-    Seletor do container com os dados de servidores e pensionistas
-    """
-
-    services_travel: str = "[aria-controls='accordion-viagens-a-servico']"
-
-    card_payment: str = "[aria-controls='accordion-cartao-pagamento']"
-    """
-    Seletor do container com os dados do cartão de pagamento do governo federal ou 
-    cartão da defesa civil
-    """
-
-    parliamentary_amendments: str = "[aria-controls='accordion-emendas']"
-    """
-    Seletor do container com os dados das emendas parlamentares
-    """
-
-    federal_employment: str = "[aria-controls='accordion-servidor']"
-    """
-    Seletor do container com os dados do servidor público
-    """
-
-    union_property: str = "[aria-controls='accordion-imovel-funcional']"
-    """
-    Seletor do container com os dados do imóvel funcional
-    """
-
-    sanctions: str = "[aria-controls='accordion-sancoes-vigentes-pf']"
-    """
-    Seletor do container com os dados de sanções vigentes
-    """
-
-    contracts: str = "[aria-controls='accordion-contratos-firmados']"
-    """
-    Seletor do container com os dados de contratos firmados
-    """
-
-    federal_invoices: str = (
-        "[aria-controls='accordion-notas-fiscais-emitidas-governo-federal']"
-    )
-    """
-    Seletor do container com os dados de notas fiscais emitidas pelo governo federal
-    """
 
     details_button: str = "a.br-button"
     """
@@ -93,10 +44,18 @@ class CPFDetailsSelector:
 
     itens: str = "div.item > button"
 
-    activate_accordion_button: str = "button.header"
-
-    res: str = "div.box-ficha_resultados"
-
     detail_row_container: str = 'div[id^="accordion"]'
 
-    detail_link: str = "div.box-ficha__resultados > a.br-button"
+
+class ConsultDetailsSelector:
+    """
+    Seletor para a consulta de detalhes.
+    """
+
+    loading_selector = "div#spinner"
+    table_selector = "table#lista"
+    table_headers = "thead th"
+
+    results_per_time = "select.form-control"
+
+    next_page = "li#lista_next"

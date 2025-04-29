@@ -1,7 +1,10 @@
 import asyncio
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
-    ElementHandle, Page, async_playwright)
+    ElementHandle,
+    Page,
+    async_playwright,
+)
 
 from desafio_mosqti.core.elements_selectors.selector import CPFDetailsSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
@@ -26,7 +29,7 @@ class PessoaFisicaDetails(BaseCrawler):
             data = await self.collect_all_details_links(page)
 
             return data
- 
+
     async def collect_all_details_links(self, page: Page) -> list[str]:
         """
         Coleta todos os links de detalhes de cada CPF
