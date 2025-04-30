@@ -46,6 +46,10 @@ class CPFDetailsSelector:
 
     detail_row_container: str = 'div[id^="accordion"]'
 
+    subsection: str = "div.br-table"
+
+    subsection_title: str = "div.responsive > strong"
+
 
 class ConsultDetailsSelector:
     """

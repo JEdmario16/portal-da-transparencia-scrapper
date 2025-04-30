@@ -1,10 +1,9 @@
-from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
+import asyncio
 
-from playwright.async_api import async_playwright, Page, ElementHandle
+from playwright.async_api import ElementHandle, Page, async_playwright
 
 from desafio_mosqti.core.elements_selectors.selector import ConsultDetailsSelector
-
-import asyncio
+from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
 
 class ConsultDetails(BaseCrawler):
@@ -14,7 +13,32 @@ class ConsultDetails(BaseCrawler):
     Uma consulta é uma página padronizada do portal da transparência que é reutilizado em várias operações de detalhamento.
     Ela fornecesse os dados em forma de tabela, possui filtros e paginação.
 
-    Esta classe é capaz de extrair os dados de uma consulta e retornar os resultados em um formato padronizado.
+    Esta classe é capaz de extrair os dados de uma consulta e retornar os resultados em um formato padronizado. É possível extrair
+    os dados de uma única página ou de todas as páginas disponíveis, dependendo do parâmetro `recursive`.
+
+    Operações que utilizam este layout:
+    - Consulta de Recursos Publicos
+    - Consulta de Viagens á Serviços
+    - Uso do cartão de Pagamento do Governo Federal ou da Defesa Civil
+    - Consulta de imóveis funcionais cedidos
+    - Contratos firmados com o Governo Federal
+    - Notas fiscais emitidas
+
+    Algumas dessas operações possui botões de detalhes mais específicos que **NÃO** são suportados por este crawler. Ao invés disso,
+    apenas coletamos o link, se disponível, para que um crawler específico possa coletar os dados.
+
+    Exemplo de uso:
+        ```python
+        from desafio_mosqti.core.crawlers.details.consult import ConsultDetails
+
+        async def main():
+            url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc" # exemplo com Cartão de Pagamento
+            consult_details = ConsultDetails()
+            data = await consult_details.fetch(url)
+            print(data)
+
+        asyncio.run(main())
+        ```
     """
 
     BASE_URL = "https://portaldatransparencia.gov.br"

@@ -97,6 +97,12 @@ class PessoaFisicaDetails(BaseCrawler):
 
         for accordion in accordions_rows:
             title = await accordion.get_attribute("id")
+
+            if await self.__accordion_has_subsecton(accordion):
+                # Se o accordion possui subseções, coleta os links de cada subseção
+                links.update(await self.__collect_all_links_from_subsections(accordion))
+                continue
+
             button = await accordion.query_selector(CPFDetailsSelector.details_button)
 
             if not button:  # TODO: log
@@ -108,11 +114,68 @@ class PessoaFisicaDetails(BaseCrawler):
 
         return links
 
+    async def __accordion_has_subsecton(self, accordion: ElementHandle) -> bool:
+        """
+        Verifica se o accordion possui uma subseção. Usado especialmente para a seção de "Recebimento de Recursos",
+        que pode conter váras subseções com cada benefício(exemplo: "Bolsa Família", "Auxílio Brasil", etc).
+        """
+
+        subsections = await accordion.query_selector_all(CPFDetailsSelector.subsection)
+
+        if not subsections:
+            return False
+
+        return True
+
+    async def __collect_all_links_from_subsections(
+        self, accordion: ElementHandle
+    ) -> dict[str, str]:
+        """
+        Coleta todos os links de detalhes de cada accordion
+        """
+
+        links = {}
+
+        # a partir do container, seleciona todas divs cujo id
+        # começa com "accordion"
+        subsections = await accordion.query_selector_all(CPFDetailsSelector.subsection)
+
+        if not subsections:
+            return links
+
+        for i, subsection in enumerate(subsections):
+
+            buttons = await subsection.query_selector_all(
+                CPFDetailsSelector.details_button
+            )
+
+            if not buttons:
+                continue
+
+            for i, button in enumerate(buttons):
+                title = await subsection.query_selector(
+                    CPFDetailsSelector.subsection_title
+                )
+
+                if not title:
+                    # fallback caso o título não seja encontrado
+                    accordion_title = await accordion.get_attribute("id")
+                    title = f"{accordion_title}_{i}"
+                else:
+                    title = await title.inner_text()
+                    title = title.strip()
+
+                link = await button.get_attribute("href")
+                link = f"{self.BASE_URL}{link}"
+                links[title] = link
+
+        return links
+
 
 if __name__ == "__main__":
 
     async def main():
-        url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/5812541-abdias-barbosa-bandeira"
+        url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/7419128-cleber-moreira-de-oliveira?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento&id=7419128"
         crawler = PessoaFisicaDetails()
         data = await crawler.fetch(url)
         print(data)
