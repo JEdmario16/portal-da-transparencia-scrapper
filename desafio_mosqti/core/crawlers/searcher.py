@@ -6,6 +6,7 @@ from playwright.async_api import (  # type: ignore[import-not-found] # ignore mi
     ElementHandle,
     Page,
     async_playwright,
+    Locator,
 )
 
 from desafio_mosqti.core.elements_selectors.selector import Selector
@@ -31,6 +32,7 @@ class Searcher(BaseCrawler):
         *,
         mode: Literal["cpf", "cnpj"] = "cpf",
         _filter: CNPJSearchFilter | CPFSearchFilter | None = None,
+        max_results: bool = False,
     ) -> List[CpfSearchResult | CnpjSearchResult]:
         """
         Faz a busca no Portal da Transparência.
@@ -39,26 +41,14 @@ class Searcher(BaseCrawler):
             :param query: O termo de busca (CPF ou CNPJ)
             :param mode: Modo de busca (cpf ou cnpj)
             :param _filter: Filtros adicionais para a busca (opcional)
+            :param max_results: Se True, retorna o número máximo de resultados possíveis (até 200). Caso contrário, retorna apenas os primeiros 10 resultados.
 
         Returns:
             :return: Resultado da busca
             :rtype: dict
         """
         url = self.build_query_url(query, mode=mode, _filter=_filter)
-        print(f"URL: {url}")
-        return await self.fetch(url)
 
-    async def fetch(self, url: str) -> List[CpfSearchResult | CnpjSearchResult]:
-        """
-        Faz a busca no Portal da Transparência.
-
-        Params:
-            :param url: URL de busca
-
-        Returns:
-            :return: Resultado da busca
-            :rtype: dict
-        """
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)
 
@@ -69,31 +59,64 @@ class Searcher(BaseCrawler):
 
             await page.goto(url)
 
+            # Aguarda o carregamento da página
+            await self.safe_load(page)
+
             results_count_element = page.locator(
                 selector=self.selector.results_count_selector
             )
 
-            # Aguarda o carregamento da página
-            await self.safe_load(page)
-
             results_count = await self.parse_results_count(results_count_element)
             if results_count == 0:
-                print("returning empty list")
                 return []
 
-            parsed_content: List[CpfSearchResult | CnpjSearchResult] = (
-                await self.parse_search_result_content(page)
+            page_count = (
+                self.__calculate_page_count(results_count) if max_results else 1
             )
 
-            await browser.close()
+            results = []
 
+            for i in range(1, page_count + 1):
+                results.extend(await self.fetch(page))
+                await self.__go_to_next_page(page, i, page_count)
+                if i == page_count:
+                    break
+
+        return results
+
+    async def fetch(self, page: Page) -> List[CpfSearchResult | CnpjSearchResult]:
+        """
+        Faz a busca no Portal da Transparência.
+
+        Params:
+            :param url: URL de busca
+
+        Returns:
+            :return: Resultado da busca
+            :rtype: dict
+        """
+
+        results_count_element = page.locator(
+            selector=self.selector.results_count_selector
+        )
+
+        # Aguarda o carregamento da página
+        await self.safe_load(page)
+
+        results_count = await self.parse_results_count(results_count_element)
+        if results_count == 0:
+            return []
+
+        parsed_content: List[CpfSearchResult | CnpjSearchResult] = (
+            await self.parse_search_result_content(page)
+        )
         return parsed_content
 
-    async def parse_results_count(self, he: ElementHandle):
+    async def parse_results_count(self, he: Locator | ElementHandle) -> int:
         """
         Faz o parse do elemento que contém a quantidade de resultados.
         Params:
-            :param he: ElementHandle do elemento que contém a quantidade de resultados
+            :param he: Locator do elemento que contém a quantidade de resultados
         Returns:
             :return: Quantidade de resultados. Caso não seja possível extrair uma quantidade válida,
             retorna -1.
@@ -104,7 +127,7 @@ class Searcher(BaseCrawler):
         match = re.search("(\d{1,3}(?:\.\d{3})*)", text)
         if match:
             # Remove os pontos e converte para inteiro
-            count = int(match.group(1).replace(".", ""))
+            count = int(match.group(1).replace(".", "").replace(",", ""))
             return count
         else:
             return -1
@@ -175,22 +198,22 @@ class Searcher(BaseCrawler):
             :return: Resultado do parse
             :rtype: CpfSearchResult
         """
-        data = await item.query_selector_all(self.selector.resullt_item_info)
-        if not data:
+        data_card = await item.query_selector_all(self.selector.resullt_item_info)
+        if not data_card:
             raise ValueError("Não foi possível encontrar os dados do item")
 
         # Alguns resultados possuem strings vazias no resultado
         # então extraímos campo por campo ao invés de usar inner_text no elemento pai
         # além disso, o texto extraído é na forma de "Campo: Valor", então
         # extraímos apenas o valor e removemos os espaços em branco antes e depois
-        data = [await d.inner_text() for d in data]
+        data = [await d.inner_text() for d in data_card]
         data = [d.strip().split(": ")[-1] for d in data]
-        url = await item.query_selector(self.selector.result_item_link)
+        url_el = await item.query_selector(self.selector.result_item_link)
 
-        if not url:
+        if not url_el:
             raise ValueError("Não foi possível encontrar o link do item")
 
-        url = await url.get_attribute("href")
+        url = await url_el.get_attribute("href") or ""
 
         if mode == "cnpj":
             nome = data[0]
@@ -277,7 +300,7 @@ class Searcher(BaseCrawler):
             if (
                 results_count == -1
             ):  # neste caso, o elemento foi encontrado, mas o texto é um placeholder
-                self.safe_load(page, timeout=timeout)
+                await self.safe_load(page, timeout=timeout)
             else:
                 print("A busca não retornou resultados")
 
@@ -343,10 +366,49 @@ class Searcher(BaseCrawler):
         else:
             raise ValueError(f"Invalid URL: {url}")
 
+    def __calculate_page_count(self, total_results: int) -> int:
+        """
+        Calcula a quantidade de páginas com base no total de resultados.
+
+        Params:
+            :param total_results: Total de resultados encontrados
+
+        Returns:
+            :return: Quantidade de páginas necessárias
+            :rtype: int
+        """
+        total_results = min(
+            total_results, 200
+        )  # Limita o total de resultados a 200 por limite do portal
+        RESULTS_PER_PAGE = 10
+        return (total_results + RESULTS_PER_PAGE - 1) // RESULTS_PER_PAGE
+
+    async def __go_to_next_page(
+        self, page: Page, current_page: int, total_pages: int
+    ) -> None:
+        """
+        Navega para a próxima página de resultados.
+
+        Params:
+            :param page: Página atual
+            :param current_page: Página atual
+            :param total_pages: Total de páginas disponíveis
+        """
+        if current_page < total_pages:
+            next_button = await page.query_selector("ul.pagination > li.next > a")
+
+            if next_button:
+                print("achou a div de paginação")
+            if not next_button:
+                raise ValueError("Não foi possível encontrar o botão de próxima página")
+
+            await next_button.click()
+            await page.wait_for_timeout(1000)
+
 
 async def main():
     searcher = Searcher()
-    result = await searcher.search("", mode="cnpj")
+    result = await searcher.search("", mode="cnpj", max_results=False)
     print(result)
 
 

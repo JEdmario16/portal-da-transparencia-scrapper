@@ -10,7 +10,27 @@ from desafio_mosqti.core.elements_selectors.selector import CPFDetailsSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
 
-class PessoaFisicaDetails(BaseCrawler):
+class DetailsLinks(BaseCrawler):
+    """
+    Classe base para coletar links de detalhes de um CPF ou CNPJ.
+    os links de detalhes referem-se as telas em portaldatransparencia.gov.br/busca/(pessoa-fisica|pessoa-juridica)/...
+    Esta tela possui várias seções, contendo informações rápidas sobre um tipo de informação e um botão "detalhes" que leva a uma tela com mais informações.
+    Esse crawler coleta estes links, e ignora as informações rápidas.
+    Algumas seções, como "Recebimento de Recursos", podem ter várias subseções(por exemplo: "Bolsa Família", "Auxílio Brasil", etc),
+    e cada uma delas possui um botão "detalhes" que leva a uma tela com mais informações.
+
+    Alguns exemplos de seções são:
+    - "Recebimento de Recursos"
+    - "Contratos"
+    - "Inatividade"
+    - "Processos Administrativos"
+    ... etc
+
+    Esta classe pode ser combinada com `desafio_mosqti.core.crawlers.searcher` para coletar esses links de resultados de busca, e com
+    `desafio_mosqti.core.crawlers.details.consult` para coletar os detalhes de cada link.
+
+    """
+
     BASE_URL = "https://portaldatransparencia.gov.br"
 
     async def fetch(self, url: str):
@@ -30,7 +50,7 @@ class PessoaFisicaDetails(BaseCrawler):
 
             return data
 
-    async def collect_all_details_links(self, page: Page) -> list[str]:
+    async def collect_all_details_links(self, page: Page) -> dict[str, str]:
         """
         Coleta todos os links de detalhes de cada CPF
         """
@@ -38,7 +58,7 @@ class PessoaFisicaDetails(BaseCrawler):
         container = await page.query_selector(CPFDetailsSelector.details_container)
 
         if not container:
-            return []
+            return {}
 
         # Ativa todos os accordions
         await self.__activate_all_accordions(container)
@@ -48,13 +68,12 @@ class PessoaFisicaDetails(BaseCrawler):
         )
 
         if not itens_container:
-            return []
+            return {}
 
         # Coleta todos os links de detalhes de cada accordion
         links = await self.__collect_all_links_from_accordions(container)
         if not links:
-            return []
-
+            return {}
         return links
 
     async def __activate_all_accordions(self, container: ElementHandle) -> None:
@@ -84,7 +103,7 @@ class PessoaFisicaDetails(BaseCrawler):
         """
         Coleta todos os links de detalhes de cada accordion
         """
-        links = {}
+        links: dict[str, str] = {}
 
         # a partir do container, seleciona todas divs cujo id
         # começa com "accordion"
@@ -96,7 +115,8 @@ class PessoaFisicaDetails(BaseCrawler):
             return links
 
         for accordion in accordions_rows:
-            title = await accordion.get_attribute("id")
+            title = await accordion.get_attribute("id") or "Sem titulo"
+            title = title.strip()
 
             if await self.__accordion_has_subsecton(accordion):
                 # Se o accordion possui subseções, coleta os links de cada subseção
@@ -134,7 +154,7 @@ class PessoaFisicaDetails(BaseCrawler):
         Coleta todos os links de detalhes de cada accordion
         """
 
-        links = {}
+        links: dict[str, str] = {}
 
         # a partir do container, seleciona todas divs cujo id
         # começa com "accordion"
@@ -153,16 +173,18 @@ class PessoaFisicaDetails(BaseCrawler):
                 continue
 
             for i, button in enumerate(buttons):
-                title = await subsection.query_selector(
+                title_el = await subsection.query_selector(
                     CPFDetailsSelector.subsection_title
                 )
 
-                if not title:
+                if not title_el:
                     # fallback caso o título não seja encontrado
-                    accordion_title = await accordion.get_attribute("id")
+                    accordion_title = (
+                        await accordion.get_attribute("id") or "Sem titulo"
+                    )
                     title = f"{accordion_title}_{i}"
                 else:
-                    title = await title.inner_text()
+                    title = await title_el.inner_text()
                     title = title.strip()
 
                 link = await button.get_attribute("href")
@@ -175,8 +197,9 @@ class PessoaFisicaDetails(BaseCrawler):
 if __name__ == "__main__":
 
     async def main():
-        url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/7419128-cleber-moreira-de-oliveira?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento&id=7419128"
-        crawler = PessoaFisicaDetails()
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/7419128-cleber-moreira-de-oliveira?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento&id=7419128"
+        url = "https://portaldatransparencia.gov.br/busca/pessoa-juridica/ESTRANG0022309-cto-events-limited?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento%2Corgao%2CunidadeGestora%2CnumeroLicitacao%2CdataAbertura&id=23340505"
+        crawler = DetailsLinks()
         data = await crawler.fetch(url)
         print(data)
 

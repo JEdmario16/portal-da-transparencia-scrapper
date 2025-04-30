@@ -31,6 +31,8 @@ class Selector:
     Por exemplo: `Selector.result_item` > div.col-sm-12
     """
 
+    next_page_selector: str = "div#paginacao > li.next > a"
+
 
 @dataclass
 class CPFDetailsSelector:
