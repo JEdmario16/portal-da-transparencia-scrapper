@@ -408,7 +408,7 @@ class Searcher(BaseCrawler):
 
 async def main():
     searcher = Searcher()
-    result = await searcher.search("", mode="cnpj", max_results=False)
+    result = await searcher.search("", mode="cnpj", max_results=True)
     print(result)
 
 

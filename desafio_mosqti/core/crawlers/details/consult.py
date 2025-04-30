@@ -5,6 +5,11 @@ from playwright.async_api import ElementHandle, Page, async_playwright
 from desafio_mosqti.core.elements_selectors.selector import ConsultDetailsSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
+import pdb
+import nest_asyncio
+
+nest_asyncio.apply()  # Adiciona o patch para evitar o erro de loop aninhado
+
 
 class ConsultDetails(BaseCrawler):
     """
@@ -71,24 +76,12 @@ class ConsultDetails(BaseCrawler):
             await browser.close()
             return data
 
-    async def __prepare_to_collect(self, page: Page) -> ElementHandle:
-        """
-        Prepara a página para coleta de dados.
-
-        Aguarda o carregamento completo da tabela e ajusta o número de resultados exibidos por página.
-
-        Args:
-            page (Page): Instância da página do Playwright.
-
-        Returns:
-            ElementHandle: Handle da tabela pronta para coleta.
-        """
-
-        await self.__safe_load(page)
-        await self.__set_max_results_per_page(page)
-
     async def collect_data(
-        self, page: Page, include_header: bool = False, recursive: bool = False
+        self,
+        page: Page,
+        include_header: bool = False,
+        recursive: bool = False,
+        set_max_results: bool = True,
     ) -> list[dict]:
         """
         Coleta os dados da tabela de uma página de consulta iterando sobre suas linhas.
@@ -103,7 +96,9 @@ class ConsultDetails(BaseCrawler):
             list[dict]: Dados coletados da(s) página(s).
         """
 
-        await self.__prepare_to_collect(page)
+        await self.__safe_load(page)
+        if set_max_results:
+            await self.__set_max_results_per_page(page)
 
         table = await page.query_selector(self.selector.table_selector)
         if not table:
@@ -126,7 +121,10 @@ class ConsultDetails(BaseCrawler):
                 return data
 
             # Coleta os dados da próxima página
-            next_page_data = await self.collect_data(page, include_header, recursive)
+
+            next_page_data = await self.collect_data(
+                page, include_header, recursive, set_max_results=False
+            )  # set_max_results=False para não repetir a configuração de resultados por página
             data.extend(next_page_data)
         return data
 
@@ -227,19 +225,20 @@ class ConsultDetails(BaseCrawler):
         Returns:
             bool: True se houve navegação para próxima página, False caso contrário.
         """
-        next_page = await page.query_selector(self.selector.next_page)
+        next_page = await page.locator(self.selector.next_page).element_handle()
         if not next_page:
             return False
 
         # checa se o botão está habilitado
         is_disabled = False
         class_name = await next_page.get_attribute("class")
-        if "disabled" in class_name:
+        if class_name and "disabled" in class_name:
             is_disabled = True
 
         if is_disabled:
             return False
-        await next_page.click()
+        await next_page.click(delay=100)
+        return True
 
     async def __set_max_results_per_page(self, page: Page) -> None:
         """
@@ -250,6 +249,12 @@ class ConsultDetails(BaseCrawler):
         """
         MAX_RESULTS_PER_PAGE = 30
         results_per_page = await page.query_selector(self.selector.results_per_time)
+
+        if not results_per_page:
+            raise ValueError(
+                "Elemento de seleção de resultados por página não encontrado."
+            )
+
         await results_per_page.scroll_into_view_if_needed()
 
         if not results_per_page:
@@ -263,9 +268,7 @@ async def main():
     # url = "https://portaldatransparencia.gov.br/despesas/favorecido?faseDespesa=3&favorecido=7710354&ordenarPor=valor&direcao=desc"
     url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc"
     consult_details = ConsultDetails()
-    data = await consult_details.fetch(url, deep=True)
-    print(data)
-    print(len(data))
+    data = await consult_details.fetch(url, recursive=True)
 
 
 if __name__ == "__main__":
