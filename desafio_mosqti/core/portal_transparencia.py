@@ -4,7 +4,8 @@ from playwright.async_api import async_playwright
 
 from desafio_mosqti.core.crawlers import ConsultDetails, DetailsLinks, Searcher
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
+from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
+                                                       CpfSearchResult)
 
 
 class PortalTransparencia:

@@ -1,8 +1,11 @@
-from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
-from desafio_mosqti.core.elements_selectors.selector import TabularDetailsSelector
-
-from playwright.async_api import async_playwright, Page, ElementHandle
 import asyncio
+from typing import Any
+
+from playwright.async_api import ElementHandle, Page, async_playwright
+
+from desafio_mosqti.core.elements_selectors.selector import \
+    TabularDetailsSelector
+from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
 
 class TabularDetails(BaseCrawler):
@@ -60,13 +63,17 @@ class TabularDetails(BaseCrawler):
 
     async def fetch(self, url: str):
         """
-        Coleta os dados de uma página tabular do Portal da Transparência.
+        Coleta todos os dados de uma página tabular do Portal da Transparência.
+
+        Realiza a ativação das seções expansíveis, extrai os dados da seção principal
+        ("dados tabelados") e das seções detalhadas (que podem conter blocos ou tabelas),
+        e normaliza as chaves para um formato padronizado.
 
         Args:
             url (str): URL da página tabular.
 
         Returns:
-            list[dict]: Lista de registros coletados, cada registro representado como um dicionário.
+            dict: Dicionário contendo os dados extraídos da página, com as chaves normalizadas.
         """
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=False)
@@ -92,13 +99,21 @@ class TabularDetails(BaseCrawler):
                 "dados_detalhados": dateiled_data,
             }
 
-
             # Normaliza as chaves
             data = await self.__normalize_keys(data)
 
             return data
 
     async def __activate_all_detailed_sections(self, page: Page):
+        """
+        Ativa todas as seções expansíveis de dados detalhados na página.
+
+        Algumas seções requerem interação para revelar seu conteúdo. Essa função simula
+        o clique em cada botão de expansão, caso a seção ainda não esteja ativa.
+
+        Args:
+            page (Page): Instância da página carregada.
+        """
 
         sections = await page.query_selector_all(self.selector.dados_detalhados)
 
@@ -119,15 +134,18 @@ class TabularDetails(BaseCrawler):
             if button:
                 await button.click()
 
-    async def __collect_data_from_tabulated_section(self, page: Page) -> list[dict]:
+    async def __collect_data_from_tabulated_section(self, page: Page) -> dict:
         """
-        Coleta os dados de uma seção com dados tabelados.
+        Extrai os dados da seção principal "dados tabelados".
+
+        Esta seção contém informações em formato de formulário, com chave e valor,
+        possivelmente com múltiplas colunas por linha.
 
         Args:
-            section (ElementHandle): Seção tabulada a ser processada.
+            page (Page): Página onde os dados serão extraídos.
 
         Returns:
-            list[dict]: Dados coletados da seção.
+            dict: Dicionário com pares chave-valor extraídos da seção principal.
         """
         data = {}
         section = await page.query_selector(self.selector.dados_tabelados)
@@ -138,23 +156,25 @@ class TabularDetails(BaseCrawler):
             return data
 
         for row in rows:
-            columns = await row.query_selector_all(self.selector.col)
-            if not columns:
-                continue
-            for column in columns:
-                key = await column.query_selector(self.selector.cell_key)
-                value = await column.query_selector(self.selector.cell_value)
-                if not key or not value:
-                    continue
-                key_text = await key.inner_text()
-                value_text = await value.inner_text()
-                data[key_text] = value_text
+            data.update(await self.__extract_key_value_pairs(row))
         return data
 
-    async def __collect_data_from_detailed_section(
-        self,
-        page: Page,
-    ):
+    async def __collect_data_from_detailed_section(self, page: Page) -> dict:
+        """
+        Coleta os dados de todas as seções de "dados detalhados" da página.
+
+        Cada seção pode conter:
+        - Um bloco de dados em formato chave-valor.
+        - Uma tabela com cabeçalho e múltiplas linhas (datatable).
+
+        O conteúdo é organizado por título de seção.
+
+        Args:
+            page (Page): Página a ser processada.
+
+        Returns:
+            dict: Dicionário contendo os dados extraídos por seção.
+        """
         sections = await page.query_selector_all(self.selector.dados_detalhados)
         if not sections:
             return {}
@@ -171,7 +191,7 @@ class TabularDetails(BaseCrawler):
             data_block = await section.query_selector(self.selector.data_block)
             if not data_block:
                 continue
-            inner_section_data[f"{title}_block"] = await self.__extact_data_block(
+            inner_section_data[f"block_{title}"] = await self.__extact_data_block(
                 data_block
             )
 
@@ -179,36 +199,77 @@ class TabularDetails(BaseCrawler):
                 self.selector.data_table_container
             )
             if data_table_el:
-                inner_section_data[f"{title}_block"] = await self.__extract_data_table(data_table_el)
+                inner_section_data[f"datatable_{title}"] = (
+                    await self.__extract_data_table(data_table_el)
+                )
             data[title] = inner_section_data
         return data
 
-    async def __extact_data_block(
-        self,
-        datablock: ElementHandle,
-    ) -> dict:
+    async def __extact_data_block(self, datablock: ElementHandle) -> dict:
+        """
+        Extrai os dados de um bloco do tipo formulário (chave-valor).
+
+        Usado em seções de dados detalhados que possuem múltiplas colunas com pares chave-valor.
+
+        Args:
+            datablock (ElementHandle): Elemento contendo os dados do bloco.
+
+        Returns:
+            dict: Dicionário com os pares extraídos.
+        """
         rows = await datablock.query_selector_all(self.selector.row)
         if not rows:
             return {}
         data = {}
         for row in rows:
-            columns = await row.query_selector_all(self.selector.col)
-            if not columns:
-                continue
-            for column in columns:
-                key = await column.query_selector(self.selector.cell_key)
-                value = await column.query_selector(self.selector.cell_value)
-                if not key or not value:
-                    continue
-                key_text = await key.inner_text()
-                value_text = await value.inner_text()
-                data[key_text] = value_text
+            data.update(await self.__extract_key_value_pairs(row))
         return data
 
-    async def __extract_data_table(
+    async def __extract_key_value_pairs(
         self,
-        table_container: ElementHandle,
-    ) -> list[dict]:
+        container: ElementHandle,
+    ) -> dict[str, str]:
+        """
+        Extrai pares chave-valor de um container com colunas estruturadas.
+
+        Este método é utilizado para processar blocos do tipo formulário, onde cada coluna
+        contém uma célula com a chave (label) e uma célula com o valor correspondente.
+
+        Args:
+            container (ElementHandle): Elemento HTML contendo as colunas a serem extraídas.
+
+        Returns:
+            dict[str, str]: Dicionário com os pares extraídos do container.
+        """
+        data = {}
+        columns = await container.query_selector_all(self.selector.col)
+        if not columns:
+            return data
+
+        for column in columns:
+            key = await column.query_selector(self.selector.cell_key)
+            value = await column.query_selector(self.selector.cell_value)
+            if not key or not value:
+                continue
+            key_text = await key.inner_text()
+            value_text = await value.inner_text()
+            data[key_text] = value_text
+        return data
+
+    async def __extract_data_table(self, table_container: ElementHandle) -> list:
+        """
+        Extrai os dados de uma tabela tabular com cabeçalho e múltiplas linhas.
+
+        Cada linha representa um registro. O cabeçalho é incluído como a primeira linha da lista.
+
+        Args:
+            table_container (ElementHandle): Elemento que contém a tabela a ser processada.
+
+        Returns:
+            list: Lista de listas, onde a primeira linha contém os cabeçalhos, seguida pelos registros.
+                Caso a tabela não contenha registros, retorna uma lista com o cabeçalho e uma mensagem
+                padrão: ["Nenhum registro encontrado"].
+        """
 
         data = []
 
@@ -254,12 +315,15 @@ class TabularDetails(BaseCrawler):
             data.append(inner_data)
         return data
 
-    async def __normalize_keys(self, data: dict) -> dict:
+    async def __normalize_keys(self, data: dict[str, Any]) -> dict[str, Any]:
         """
-        Normaliza as chaves do dicionário para remover espaços e caracteres especiais.
+        Normaliza as chaves de um dicionário recursivamente.
+
+        Remove espaços, converte para minúsculo e substitui espaços por underscore.
+        Aplica-se a chaves internas em dicionários aninhados ou listas de dicionários.
 
         Args:
-            data (dict): Dicionário com os dados a serem normalizados.
+            data (dict): Dicionário com as chaves originais.
 
         Returns:
             dict: Dicionário com as chaves normalizadas.
@@ -272,18 +336,24 @@ class TabularDetails(BaseCrawler):
                 normalized_data[normalized_key] = await self.__normalize_keys(value)
             elif isinstance(value, list):
                 normalized_data[normalized_key] = [
-                    await self.__normalize_keys(item) if isinstance(item, dict) else item
+                    (
+                        await self.__normalize_keys(item)
+                        if isinstance(item, dict)
+                        else item
+                    )
                     for item in value
                 ]
             else:
                 normalized_data[normalized_key] = value
         return normalized_data
-    
+
+
 async def main():
     url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
     tabular_details = TabularDetails()
     data = await tabular_details.fetch(url)
     print(data)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

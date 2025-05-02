@@ -3,19 +3,28 @@ import re
 from typing import List, Literal
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
-    ElementHandle,
-    Locator,
-    Page,
-    async_playwright,
-)
+    ElementHandle, Locator, Page, async_playwright)
 
 from desafio_mosqti.core.elements_selectors.selector import Selector
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
-from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
+from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
+                                                       CpfSearchResult)
 
 
 class Searcher(BaseCrawler):
+    """
+    Crawler para buscas no Portal da Transparência (Pessoa Física e Jurídica).
+
+    Esta classe realiza consultas públicas por CPF ou CNPJ, aplicando filtros opcionais,
+    e retornando os resultados estruturados como instâncias de CpfSearchResult ou CnpjSearchResult.
+
+    Recursos disponíveis:
+    - Geração da URL com base no tipo de consulta e filtros.
+    - Paginação de resultados (opcional, até 200 itens).
+    - Extração estruturada de dados a partir da lista de resultados.
+    - Compatível com modos "cpf" e "cnpj".
+    """
 
     BASE_URL = "https://portaldatransparencia.gov.br"
 
@@ -35,17 +44,16 @@ class Searcher(BaseCrawler):
         max_results: bool = False,
     ) -> List[CpfSearchResult | CnpjSearchResult]:
         """
-        Faz a busca no Portal da Transparência.
+        Executa uma busca no Portal da Transparência, retornando os resultados estruturados.
 
-        Params:
-            :param query: O termo de busca (CPF ou CNPJ)
-            :param mode: Modo de busca (cpf ou cnpj)
-            :param _filter: Filtros adicionais para a busca (opcional)
-            :param max_results: Se True, retorna o número máximo de resultados possíveis (até 200). Caso contrário, retorna apenas os primeiros 10 resultados.
+        Args:
+            query (str): Termo a ser buscado (CPF ou CNPJ).
+            mode (Literal["cpf", "cnpj"]): Modo de busca (pessoa física ou jurídica).
+            _filter (CNPJSearchFilter | CPFSearchFilter, optional): Filtro adicional de busca.
+            max_results (bool): Se True, percorre todas as páginas até 200 resultados. Defaults to False.
 
         Returns:
-            :return: Resultado da busca
-            :rtype: dict
+            List[CpfSearchResult | CnpjSearchResult]: Lista de resultados da busca.
         """
         url = self.build_query_url(query, mode=mode, _filter=_filter)
 
@@ -74,38 +82,33 @@ class Searcher(BaseCrawler):
                 self.__calculate_page_count(results_count) if max_results else 1
             )
 
-            results = []
+            all_results = []
 
-            for i in range(1, page_count + 1):
-                results.extend(await self.fetch(page))
-                await self.__go_to_next_page(page, i, page_count)
-                if i == page_count:
-                    break
+            # for i in range(1, page_count + 1):
+            #     results.extend(await self.fetch(page))
+            #     await self.__go_to_next_page(page, i, page_count)
+            #     if i == page_count:
+            #         break
 
-        return results
+            async for result in self.paginate_results(page, page_count):
+                all_results.extend(result)
+        return all_results
+
+    async def paginate_results(self, page: Page, total_pages: int):
+        for i in range(total_pages):
+            yield await self.parse_current_page(page)
+            await self.__go_to_next_page(page, i + 1, total_pages)
 
     async def fetch(self, page: Page) -> List[CpfSearchResult | CnpjSearchResult]:
         """
-        Faz a busca no Portal da Transparência.
+        Realiza a extração de resultados da página atual já carregada.
 
-        Params:
-            :param url: URL de busca
+        Args:
+            page (Page): Instância da página carregada.
 
         Returns:
-            :return: Resultado da busca
-            :rtype: dict
+            List[CpfSearchResult | CnpjSearchResult]: Lista de resultados extraídos da página.
         """
-
-        results_count_element = page.locator(
-            selector=self.selector.results_count_selector
-        )
-
-        # Aguarda o carregamento da página
-        await self.safe_load(page)
-
-        results_count = await self.parse_results_count(results_count_element)
-        if results_count == 0:
-            return []
 
         parsed_content: List[CpfSearchResult | CnpjSearchResult] = (
             await self.parse_search_result_content(page)
@@ -114,15 +117,14 @@ class Searcher(BaseCrawler):
 
     async def parse_results_count(self, he: Locator | ElementHandle) -> int:
         """
-        Faz o parse do elemento que contém a quantidade de resultados.
-        Params:
-            :param he: Locator do elemento que contém a quantidade de resultados
-        Returns:
-            :return: Quantidade de resultados. Caso não seja possível extrair uma quantidade válida,
-            retorna -1.
-            :rtype: int
-        """
+        Extrai a quantidade de resultados exibida na página.
 
+        Args:
+            he (Locator | ElementHandle): Elemento contendo o texto da contagem.
+
+        Returns:
+            int: Número total de resultados. Retorna -1 se a contagem não for identificada.
+        """
         text = await he.inner_text()
         match = re.search("(\d{1,3}(?:\.\d{3})*)", text)
         if match:
@@ -136,16 +138,14 @@ class Searcher(BaseCrawler):
         self, page: Page
     ) -> List[CpfSearchResult | CnpjSearchResult]:
         """
-        Faz o parse do conteúdo da página.
+        Faz o parsing completo da lista de resultados exibida na página.
 
-        Params:
-            :param page: Página a ser parseada
+        Args:
+            page (Page): Página da lista de busca.
 
         Returns:
-            :return: Resultado do parse
-            :rtype: list
+            List[CpfSearchResult | CnpjSearchResult]: Lista de resultados convertidos.
         """
-
         assert "busca/lista" in page.url, "A página não é uma lista de busca"
 
         container = await page.query_selector(self.selector.results)
@@ -168,14 +168,14 @@ class Searcher(BaseCrawler):
         self, itens: List[ElementHandle], mode: Literal["cpf", "cnpj"]
     ) -> List[CpfSearchResult | CnpjSearchResult]:
         """
-        Faz o parse dos itens da lista de busca.
+        Processa individualmente os itens da lista de busca.
 
-        Params:
-            :param itens: Lista de itens a serem parseados
+        Args:
+            itens (List[ElementHandle]): Elementos HTML da lista.
+            mode (Literal["cpf", "cnpj"]): Modo de busca atual.
 
         Returns:
-            :return: Resultado do parse
-            :rtype: list
+            List[CpfSearchResult | CnpjSearchResult]: Resultados convertidos.
         """
         parsed_itens = []
         for item in itens:
@@ -189,14 +189,17 @@ class Searcher(BaseCrawler):
         self, item: ElementHandle, mode: Literal["cpf", "cnpj"]
     ) -> CpfSearchResult | CnpjSearchResult:
         """
-        Faz o parse de um item de CPF.
+        Faz o parse de um item individual da lista de resultados.
 
-        Params:
-            :param item: Item a ser parseado
+        Args:
+            item (ElementHandle): Elemento HTML do item.
+            mode (Literal["cpf", "cnpj"]): Modo de busca atual.
 
         Returns:
-            :return: Resultado do parse
-            :rtype: CpfSearchResult
+            CpfSearchResult | CnpjSearchResult: Resultado convertido.
+
+        Raises:
+            ValueError: Se o item não contiver os dados esperados.
         """
         data_card = await item.query_selector_all(self.selector.resullt_item_info)
         if not data_card:
@@ -213,7 +216,8 @@ class Searcher(BaseCrawler):
         if not url_el:
             raise ValueError("Não foi possível encontrar o link do item")
 
-        url = await url_el.get_attribute("href") or ""
+        url = await url_el.get_attribute("href")
+        url = f"{self.BASE_URL}{url}" if url and url.startswith("/") else url or ""
 
         if mode == "cnpj":
             nome = data[0]
@@ -245,22 +249,18 @@ class Searcher(BaseCrawler):
         query: str,
         *,
         mode: Literal["cpf", "cnpj"] = "cpf",
-        page: int = 1,
-        size: int = 10,
         _filter: CNPJSearchFilter | CPFSearchFilter | None = None,
-    ):
+    ) -> str:
         """
-        Constrói a URL de busca no Portal da Transparência. Este método não faz a busca em si, apenas gera a URL.
+        Constrói a URL de consulta com base no termo, modo e filtros.
 
-        Params:
-            :param query: O termo de busca (CPF ou CNPJ)
-            :param mode: Modo de busca (cpf ou cnpj)
-            :param _filter: Filtros adicionais para a busca (opcional)
+        Args:
+            query (str): Termo de busca (CPF ou CNPJ).
+            mode (Literal["cpf", "cnpj"]): Modo de busca.
+            _filter (CNPJSearchFilter | CPFSearchFilter, optional): Filtro adicional.
 
         Returns:
-            :return: URL de busca construída
-            :rtype: str
-
+            str: URL completa para a consulta.
         """
         subdomain_mode = self.__resolve_mode(mode)
 
@@ -273,19 +273,17 @@ class Searcher(BaseCrawler):
 
     async def safe_load(self, page: Page, timeout: int = 5) -> None:
         """
-        Espera a página carregar até que o elemento de resultados esteja visível.
-        Caso alcance o timeout, extraí o elemento com a quantidade de resultados para garantir
-        que realmente não há resultados.
+        Aguarda o carregamento da página de resultados.
 
-        Isso é necessário pois o elemento que contém a quantidade de resultados é pré-carregado
-        antes mesmo da resposta da busca ser recebida.
-        Isso pode causar problemas em alguns casos, como quando a busca não retorna resultados.
+        Caso o tempo expire, tenta garantir se a ausência de resultados é legítima.
 
-        Params:
-            :param page: Página a ser carregada
-            :param timeout: Tempo máximo de espera (em segundos)
+        Args:
+            page (Page): Página da busca.
+            timeout (int): Tempo máximo de espera (em segundos).
+
+        Raises:
+            ValueError: Se o elemento de resultados não for encontrado.
         """
-
         try:
             await page.wait_for_selector(self.selector.results, timeout=timeout * 1000)
         except Exception as _:
@@ -306,18 +304,16 @@ class Searcher(BaseCrawler):
 
     def __resolve_mode(self, mode: str) -> str:
         """
-        Interpreta o modo de busca (cpf ou cnpj) e retorna o subdomínio correto.
+        Retorna o subdomínio correspondente ao modo de busca.
 
-        Params:
-            :param mode: Modo de busca (cpf ou cnpj)
+        Args:
+            mode (str): Modo ("cpf" ou "cnpj").
 
         Returns:
-            :return: Subdomínio correto para a busca
-            :rtype: str
+            str: Subdomínio correspondente.
 
         Raises:
-            :raises ValueError: Se o modo não for válido
-
+            ValueError: Se o modo for inválido.
         """
         if mode not in self.MODES:
             raise ValueError(f"Invalid mode: {mode}")
@@ -327,14 +323,14 @@ class Searcher(BaseCrawler):
         self, _filter: CNPJSearchFilter | CPFSearchFilter, mode: Literal["cnpj", "cpf"]
     ) -> None:
         """
-        Valida os filtros de busca.
+        Valida se o filtro informado é compatível com o modo de busca.
 
-        Params:
-            :param filter: Filtro a ser validado
-            :param mode: Modo de busca (cpf ou cnpj)
+        Args:
+            _filter (CNPJSearchFilter | CPFSearchFilter): Filtro a ser validado.
+            mode (Literal["cnpj", "cpf"]): Modo de busca.
 
         Raises:
-            :raises ValueError: Se o filtro não for válido
+            ValueError: Se o filtro não corresponder ao modo.
         """
         if mode == "cnpj":
             if not isinstance(_filter, CNPJSearchFilter):
@@ -347,17 +343,16 @@ class Searcher(BaseCrawler):
 
     def __get_mode_from_url(self, url: str) -> Literal["cpf", "cnpj"]:
         """
-        Interpreta o modo de busca a partir da URL.
+        Determina o modo de busca com base na URL.
 
-        Params:
-            :param url: URL a ser interpretada
+        Args:
+            url (str): URL acessada.
 
         Returns:
-            :return: Modo de busca (cpf ou cnpj)
-            :rtype: str
+            Literal["cpf", "cnpj"]: Modo identificado.
 
         Raises:
-            :raises ValueError: Se o modo não for válido
+            ValueError: Se a URL não contiver um modo reconhecido.
         """
         if "pessoa-fisica" in url:
             return "cpf"
@@ -368,14 +363,13 @@ class Searcher(BaseCrawler):
 
     def __calculate_page_count(self, total_results: int) -> int:
         """
-        Calcula a quantidade de páginas com base no total de resultados.
+        Calcula o número de páginas com base no total de resultados.
 
-        Params:
-            :param total_results: Total de resultados encontrados
+        Args:
+            total_results (int): Quantidade de resultados identificados.
 
         Returns:
-            :return: Quantidade de páginas necessárias
-            :rtype: int
+            int: Número de páginas necessárias (máx. 200 resultados).
         """
         total_results = min(
             total_results, 200
@@ -387,12 +381,15 @@ class Searcher(BaseCrawler):
         self, page: Page, current_page: int, total_pages: int
     ) -> None:
         """
-        Navega para a próxima página de resultados.
+        Navega para a próxima página da lista de resultados.
 
-        Params:
-            :param page: Página atual
-            :param current_page: Página atual
-            :param total_pages: Total de páginas disponíveis
+        Args:
+            page (Page): Página atual.
+            current_page (int): Número da página atual.
+            total_pages (int): Número total de páginas disponíveis.
+
+        Raises:
+            ValueError: Se o botão de próxima página não for encontrado.
         """
         if current_page < total_pages:
             next_button = await page.query_selector("ul.pagination > li.next > a")

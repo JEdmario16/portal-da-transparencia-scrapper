@@ -2,7 +2,8 @@ import asyncio
 
 from playwright.async_api import ElementHandle, Page, async_playwright
 
-from desafio_mosqti.core.elements_selectors.selector import ConsultDetailsSelector
+from desafio_mosqti.core.elements_selectors.selector import \
+    ConsultDetailsSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
 
