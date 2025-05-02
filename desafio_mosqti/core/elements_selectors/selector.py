@@ -89,7 +89,15 @@ class TabularDetailsSelector:
     data_block = "div.bloco"
 
     # data table
-    data_table_container = "div.wrapper-table"
+    data_table_container = "div.wrappe      r-table"
     data_table_title = "spam"  # isso mesmo, 'spam' rs
     data_table_table = "table.dataTable"
     table_headers = "thead th"
+
+class DetailPageDetectionSelector:
+    """
+    Seletor para detectar se uma página de detalhes é `ConsultDetails` ou `TabularDetails`.
+    """
+
+    # Seletor para verificar se a página é uma página de detalhes
+    filter_box = "div#id-box-filtro"

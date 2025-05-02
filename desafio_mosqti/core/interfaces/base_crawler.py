@@ -1,10 +1,19 @@
-from abc import ABC, abstractmethod
+from __future__ import annotations
 
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from playwright.async_api import Page
 
 class BaseCrawler(ABC):
     """
     Base abstrata para um crawler.
     """
+
+    def __init__(self, page: Page):
+        self.page = page
+        super().__init__()
 
     @property
     @abstractmethod

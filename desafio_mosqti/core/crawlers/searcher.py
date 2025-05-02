@@ -57,46 +57,36 @@ class Searcher(BaseCrawler):
         """
         url = self.build_query_url(query, mode=mode, _filter=_filter)
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
 
-            page = await browser.new_page()
+        # Adiciona os headers customizados
+        await self.page.set_extra_http_headers(self.default_headers)
 
-            # Adiciona os headers customizados
-            await page.set_extra_http_headers(self.default_headers)
+        await self.page.goto(url)
 
-            await page.goto(url)
+        # Aguarda o carregamento da página
+        await self.safe_load(self.page)
 
-            # Aguarda o carregamento da página
-            await self.safe_load(page)
+        results_count_element = self.page.locator(
+            selector=self.selector.results_count_selector
+        )
 
-            results_count_element = page.locator(
-                selector=self.selector.results_count_selector
-            )
+        results_count = await self.parse_results_count(results_count_element)
+        if results_count == 0:
+            return []
 
-            results_count = await self.parse_results_count(results_count_element)
-            if results_count == 0:
-                return []
+        page_count = (
+            self.__calculate_page_count(results_count) if max_results else 1
+        )
 
-            page_count = (
-                self.__calculate_page_count(results_count) if max_results else 1
-            )
+        all_results = []
 
-            all_results = []
-
-            # for i in range(1, page_count + 1):
-            #     results.extend(await self.fetch(page))
-            #     await self.__go_to_next_page(page, i, page_count)
-            #     if i == page_count:
-            #         break
-
-            async for result in self.paginate_results(page, page_count):
-                all_results.extend(result)
+        async for result in self.paginate_results(self.page, page_count):
+            all_results.extend(result)
         return all_results
 
     async def paginate_results(self, page: Page, total_pages: int):
         for i in range(total_pages):
-            yield await self.parse_current_page(page)
+            yield await self.parse_search_result_content(page)
             await self.__go_to_next_page(page, i + 1, total_pages)
 
     async def fetch(self, page: Page) -> List[CpfSearchResult | CnpjSearchResult]:
@@ -150,6 +140,7 @@ class Searcher(BaseCrawler):
 
         container = await page.query_selector(self.selector.results)
         if not container:
+            return []
             raise ValueError(
                 "Não foi possível encontrar o container de resultados", page.url
             )
@@ -392,15 +383,13 @@ class Searcher(BaseCrawler):
             ValueError: Se o botão de próxima página não for encontrado.
         """
         if current_page < total_pages:
-            next_button = await page.query_selector("ul.pagination > li.next > a")
+            next_button = await page.locator("ul.pagination > li.next > a").element_handle()
 
-            if next_button:
-                print("achou a div de paginação")
             if not next_button:
                 raise ValueError("Não foi possível encontrar o botão de próxima página")
 
-            await next_button.click()
-            await page.wait_for_timeout(1000)
+            await next_button.click(delay=100)
+            await page.wait_for_timeout(1000*10)
 
 
 async def main():
