@@ -65,3 +65,31 @@ class ConsultDetailsSelector:
     results_per_time = "select.form-control"
 
     next_page = "li#lista_next"
+
+
+class TabularDetailsSelector:
+    """
+    Seletor para detalhes tabulares.
+    """
+
+    # geral
+    dados_detalhados_expand_button = "button.header"
+    item = "div.item"
+    row = "div.row"
+    col = "div.col-xs-12"
+    cell_key = "strong"
+    cell_value = "span"
+
+    # dados tabelados
+    dados_tabelados = "section.dados-tabelados"
+
+    # dados detalhados
+    dados_detalhados = "section.dados-detalhados"
+    section_title = "span.title"
+    data_block = "div.bloco"
+
+    # data table
+    data_table_container = "div.wrapper-table"
+    data_table_title = "spam"  # isso mesmo, 'spam' rs
+    data_table_table = "table.dataTable"
+    table_headers = "thead th"

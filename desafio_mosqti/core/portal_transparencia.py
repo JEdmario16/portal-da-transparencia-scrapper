@@ -1,11 +1,10 @@
-from desafio_mosqti.core.crawlers import DetailsLinks, Searcher, ConsultDetails
-from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
-
+from typing import Literal, Optional, Union
 
 from playwright.async_api import async_playwright
 
-from typing import Optional, Union, Literal
+from desafio_mosqti.core.crawlers import ConsultDetails, DetailsLinks, Searcher
+from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
+from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
 
 
 class PortalTransparencia:

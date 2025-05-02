@@ -4,9 +4,9 @@ from typing import List, Literal
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
     ElementHandle,
+    Locator,
     Page,
     async_playwright,
-    Locator,
 )
 
 from desafio_mosqti.core.elements_selectors.selector import Selector

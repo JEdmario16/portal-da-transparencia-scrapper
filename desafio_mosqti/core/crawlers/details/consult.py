@@ -5,11 +5,6 @@ from playwright.async_api import ElementHandle, Page, async_playwright
 from desafio_mosqti.core.elements_selectors.selector import ConsultDetailsSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
-import pdb
-import nest_asyncio
-
-nest_asyncio.apply()  # Adiciona o patch para evitar o erro de loop aninhado
-
 
 class ConsultDetails(BaseCrawler):
     """
@@ -266,9 +261,12 @@ class ConsultDetails(BaseCrawler):
 
 async def main():
     # url = "https://portaldatransparencia.gov.br/despesas/favorecido?faseDespesa=3&favorecido=7710354&ordenarPor=valor&direcao=desc"
-    url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc"
+    # url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc"
+    url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
     consult_details = ConsultDetails()
     data = await consult_details.fetch(url, recursive=True)
+    print(data)
+    print(len(data))
 
 
 if __name__ == "__main__":

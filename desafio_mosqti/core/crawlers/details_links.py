@@ -27,7 +27,8 @@ class DetailsLinks(BaseCrawler):
     ... etc
 
     Esta classe pode ser combinada com `desafio_mosqti.core.crawlers.searcher` para coletar esses links de resultados de busca, e com
-    `desafio_mosqti.core.crawlers.details.consult` para coletar os detalhes de cada link.
+    `desafio_mosqti.core.crawlers.details.consult` ou `desafio_mosqti.core.crawlers.tabular_details` (dependendo do layout da tela)
+    para coletar os detalhes de cada link.
 
     """
 
