@@ -3,12 +3,11 @@ from typing import Any
 
 from playwright.async_api import ElementHandle, Page, async_playwright
 
-from desafio_mosqti.core.elements_selectors.selector import \
-    TabularDetailsSelector
-from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
+from desafio_mosqti.core.elements_selectors.selector import TabularDetailsSelector
+from desafio_mosqti.core.interfaces.base_details import BaseDetails
 
 
-class TabularDetails(BaseCrawler):
+class TabularDetails(BaseDetails):
     """
     Coletor de dados para páginas tabulares do Portal da Transparência.
 
@@ -61,7 +60,7 @@ class TabularDetails(BaseCrawler):
 
     selector = TabularDetailsSelector()
 
-    async def fetch(self, url: str):
+    async def fetch(self, url: str, **kwargs):
         """
         Coleta todos os dados de uma página tabular do Portal da Transparência.
 
@@ -116,6 +115,7 @@ class TabularDetails(BaseCrawler):
         """
 
         sections = await page.query_selector_all(self.selector.dados_detalhados)
+        print(f"sections: {len(sections)}")
 
         if not sections:
             return
@@ -133,6 +133,7 @@ class TabularDetails(BaseCrawler):
             )
             if button:
                 await button.click()
+            print("section expanded")
 
     async def __collect_data_from_tabulated_section(self, page: Page) -> dict:
         """
@@ -176,6 +177,7 @@ class TabularDetails(BaseCrawler):
             dict: Dicionário contendo os dados extraídos por seção.
         """
         sections = await page.query_selector_all(self.selector.dados_detalhados)
+        print(f"sections: {len(sections)}")
         if not sections:
             return {}
 
@@ -188,9 +190,15 @@ class TabularDetails(BaseCrawler):
             if not title_el:
                 continue
             title = await title_el.inner_text()
-            data_block = await section.query_selector(self.selector.data_block)
+
+            # Aqui existem dois seletores, pois os dados podem estar em div.bloco
+            # ou div.br-accordion
+            data_block = (
+                await section.query_selector(self.selector.data_block) or None
+            ) or (await section.query_selector(self.selector.data_accordion) or None)
             if not data_block:
                 continue
+
             inner_section_data[f"block_{title}"] = await self.__extact_data_block(
                 data_block
             )
@@ -203,6 +211,8 @@ class TabularDetails(BaseCrawler):
                     await self.__extract_data_table(data_table_el)
                 )
             data[title] = inner_section_data
+
+            print(f"section: {title}")
         return data
 
     async def __extact_data_block(self, datablock: ElementHandle) -> dict:
@@ -349,8 +359,9 @@ class TabularDetails(BaseCrawler):
 
 
 async def main():
-    url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
-    tabular_details = TabularDetails()
+    # url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
+    url = "https://portaldatransparencia.gov.br/notas-fiscais/25231008761132000148558929001316531207162194?ordenarPor=dataEvento&direcao=asc"
+    tabular_details = TabularDetails(page=None)
     data = await tabular_details.fetch(url)
     print(data)
 

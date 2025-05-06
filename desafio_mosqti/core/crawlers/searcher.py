@@ -3,13 +3,16 @@ import re
 from typing import List, Literal
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
-    ElementHandle, Locator, Page, async_playwright)
+    ElementHandle,
+    Locator,
+    Page,
+    async_playwright,
+)
 
 from desafio_mosqti.core.elements_selectors.selector import Selector
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
-from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
-                                                       CpfSearchResult)
+from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
 
 
 class Searcher(BaseCrawler):
@@ -57,7 +60,6 @@ class Searcher(BaseCrawler):
         """
         url = self.build_query_url(query, mode=mode, _filter=_filter)
 
-
         # Adiciona os headers customizados
         await self.page.set_extra_http_headers(self.default_headers)
 
@@ -74,9 +76,7 @@ class Searcher(BaseCrawler):
         if results_count == 0:
             return []
 
-        page_count = (
-            self.__calculate_page_count(results_count) if max_results else 1
-        )
+        page_count = self.__calculate_page_count(results_count) if max_results else 1
 
         all_results = []
 
@@ -383,13 +383,15 @@ class Searcher(BaseCrawler):
             ValueError: Se o botão de próxima página não for encontrado.
         """
         if current_page < total_pages:
-            next_button = await page.locator("ul.pagination > li.next > a").element_handle()
+            next_button = await page.locator(
+                "ul.pagination > li.next > a"
+            ).element_handle()
 
             if not next_button:
                 raise ValueError("Não foi possível encontrar o botão de próxima página")
 
             await next_button.click(delay=100)
-            await page.wait_for_timeout(1000*10)
+            await page.wait_for_timeout(1000 * 10)
 
 
 async def main():

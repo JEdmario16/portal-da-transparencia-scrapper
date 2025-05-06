@@ -1,7 +1,10 @@
 import asyncio
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
-    ElementHandle, Page, async_playwright)
+    ElementHandle,
+    Page,
+    async_playwright,
+)
 
 from desafio_mosqti.core.elements_selectors.selector import CPFDetailsSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
@@ -33,20 +36,16 @@ class DetailsLinks(BaseCrawler):
 
     async def fetch(self, url: str):
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
+        # Adiciona os headers customizados
+        await self.page.set_extra_http_headers(self.default_headers)
 
-            page = await browser.new_page()
-            # Adiciona os headers customizados
-            await page.set_extra_http_headers(self.default_headers)
+        await self.page.goto(url)
 
-            await page.goto(url)
+        # espera a página carregar
+        await self.page.wait_for_selector(CPFDetailsSelector.details_container)
+        data = await self.collect_all_details_links(self.page)
 
-            # espera a página carregar
-            await page.wait_for_selector(CPFDetailsSelector.details_container)
-            data = await self.collect_all_details_links(page)
-
-            return data
+        return data
 
     async def collect_all_details_links(self, page: Page) -> dict[str, str]:
         """
@@ -102,7 +101,6 @@ class DetailsLinks(BaseCrawler):
         Coleta todos os links de detalhes de cada accordion
         """
         links: dict[str, str] = {}
-
         # a partir do container, seleciona todas divs cujo id
         # começa com "accordion"
         accordions_rows = await container.query_selector_all(
@@ -119,16 +117,34 @@ class DetailsLinks(BaseCrawler):
             if await self.__accordion_has_subsecton(accordion):
                 # Se o accordion possui subseções, coleta os links de cada subseção
                 links.update(await self.__collect_all_links_from_subsections(accordion))
+
+                # extrarow apenas ocorre em subseções
+                if await self.__accordion_has_extra_row(accordion):
+                    # Se o accordion possui uma linha extra, coleta os links de cada linha extra
+                    links.update(
+                        await self.__collect_links_from_extra_row(
+                            page=self.page, accordion=accordion
+                        )
+                    )
                 continue
 
-            button = await accordion.query_selector(CPFDetailsSelector.details_button)
+            buttons = await accordion.query_selector_all(
+                CPFDetailsSelector.details_button
+            )
 
-            if not button:  # TODO: log
+            if not buttons:  # TODO: log
                 continue
-            link = await button.get_attribute("href")
-            link = f"{self.BASE_URL}{link}"
 
-            links[title] = link
+            for i, button in enumerate(buttons):
+                # Se o accordion não possui subseções, coleta os links de cada botão
+                link = await button.get_attribute("href")
+                link = f"{self.BASE_URL}{link}"
+
+                if not link:
+                    continue
+
+                # Adiciona o link ao dicionário com o título do accordion como chave
+                links[f"{title}_{i}"] = link
 
         return links
 
@@ -143,6 +159,19 @@ class DetailsLinks(BaseCrawler):
         if not subsections:
             return False
 
+        return True
+
+    async def __accordion_has_extra_row(self, accordion: ElementHandle) -> bool:
+        """
+        Verifica se o accordion possui uma linha extra. Usado especialmente para a seção de "Recebimento de Recursos",
+        que pode conter váras subseções com cada benefício(exemplo: "Bolsa Família", "Auxílio Brasil", etc).
+        """
+
+        extra_row = await accordion.query_selector(
+            CPFDetailsSelector.beneficiary_federal_resources
+        )
+        if not extra_row:
+            return False
         return True
 
     async def __collect_all_links_from_subsections(
@@ -191,13 +220,57 @@ class DetailsLinks(BaseCrawler):
 
         return links
 
+    async def __collect_links_from_extra_row(
+        self, accordion: ElementHandle, page: Page
+    ) -> dict[str, str]:
+        """
+        Coleta o link da linha extra do accordion.
+        A linha extra é usada especialmente para a seção de "Recebimento de Recursos",
+        que pode conter váras subseções com cada benefício(exemplo: "Bolsa Família", "Auxílio Brasil", etc).
+        A linha extra possui um botão "detalhes" que leva a uma tela com mais informações.
+        O objeto `Page` é necessário, pois o caminho do titulo do botão é obtido via xpath.
+
+        """
+
+        container = await accordion.query_selector(
+            CPFDetailsSelector.beneficiary_federal_resources
+        )
+
+        if not container:
+            return {}
+
+        title = await page.query_selector(
+            CPFDetailsSelector.beneficiary_federal_resources_title
+        )
+
+        if not title:
+            title = "Sem titulo"
+        else:
+            title = await title.inner_text()
+            title = title.strip()
+
+        btn = await container.query_selector(CPFDetailsSelector.details_button)
+        if not btn:
+            return {}
+        link = await btn.get_attribute("href")
+        if not link:
+            return {}
+        link = f"{self.BASE_URL}{link}"
+        return {title: link}
+
 
 if __name__ == "__main__":
 
     async def main():
         # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/7419128-cleber-moreira-de-oliveira?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento&id=7419128"
-        url = "https://portaldatransparencia.gov.br/busca/pessoa-juridica/ESTRANG0022309-cto-events-limited?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento%2Corgao%2CunidadeGestora%2CnumeroLicitacao%2CdataAbertura&id=23340505"
-        crawler = DetailsLinks()
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-juridica/ESTRANG0022309-cto-events-limited?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento%2Corgao%2CunidadeGestora%2CnumeroLicitacao%2CdataAbertura&id=23340505"
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/4414745-abadio-jose-vital"
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/411913-acir-pimenta-madeira-filho"
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/284652885-a-guida-sulidade-silva"
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/14410537-aalin-juvene-picanco-dos-santos"
+        # url = "https://portaldatransparencia.gov.br/busca/pessoa-fisica/9319343-abdalio-pereira-damasceno-cruz?paginacaoSimples=true&tamanhoPagina=&offset=&direcaoOrdenacao=asc&colunasSelecionadas=linkDetalhamento%2Corgao%2CunidadeGestora%2CnumeroLicitacao&id=9319343"
+        url = "https://portaldatransparencia.gov.br/busca/pessoa-juridica/09036777000180-centro-de-educacao-profissionalizacao-cidadania-e-empreendedorismo"
+        crawler = DetailsLinks(page=None)
         data = await crawler.fetch(url)
         print(data)
 

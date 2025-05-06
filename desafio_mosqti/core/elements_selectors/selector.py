@@ -52,6 +52,14 @@ class CPFDetailsSelector:
 
     subsection_title: str = "div.responsive > strong"
 
+    # side case: "Recebimento de Recursos" possui dados
+    # tantos de benefícios quanto de recebimentos de recursos,
+    # em um layout diferente.
+    beneficiary_federal_resources: str = "div.row > div.col-xs-12"
+    beneficiary_federal_resources_title: str = (
+        "xpath=/html/body/main/div/div[2]/div[2]/div/div[2]/div/div/strong"
+    )
+
 
 class ConsultDetailsSelector:
     """
@@ -87,12 +95,14 @@ class TabularDetailsSelector:
     dados_detalhados = "section.dados-detalhados"
     section_title = "span.title"
     data_block = "div.bloco"
+    data_accordion = "div.br-accordion"
 
     # data table
-    data_table_container = "div.wrappe      r-table"
+    data_table_container = "div.wrapper-table"
     data_table_title = "spam"  # isso mesmo, 'spam' rs
     data_table_table = "table.dataTable"
     table_headers = "thead th"
+
 
 class DetailPageDetectionSelector:
     """
