@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from playwright.async_api import Page
+    from playwright.async_api import Page, BrowserContext
+    from logging import Logger
 
 
 class BaseCrawler(ABC):
@@ -12,8 +13,16 @@ class BaseCrawler(ABC):
     Base abstrata para um crawler.
     """
 
-    def __init__(self, page: Page):
+    def __init__(self, page: Page, logger: Logger | None = None):
         self.page = page
+        self.ctx: BrowserContext = page.context
+
+        if not logger:
+            from desafio_mosqti.core.loger import logger as default_logger
+
+            logger = default_logger
+        self.logger = logger
+
         super().__init__()
 
     @property
@@ -39,3 +48,34 @@ class BaseCrawler(ABC):
         return {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
         }
+
+    async def captcha_check_detector(
+        self,
+        page: Page,
+    ):
+        """
+        Verifica se a página contém um captcha.
+
+        Args:
+            page (Page): Página a ser verificada.
+
+        Returns:
+            bool: True se o captcha estiver presente, False caso contrário.
+        """
+        page_title = await page.title()
+        if "Human Verification" in page_title:
+            return True
+        return False
+
+    async def __aenter__(self) -> BaseCrawler:
+        """
+        Método chamado ao entrar no contexto do gerenciador de contexto.
+        """
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Método chamado ao sair do contexto do gerenciador de contexto.
+        """
+        await self.page.close()
+        await self.ctx.close()

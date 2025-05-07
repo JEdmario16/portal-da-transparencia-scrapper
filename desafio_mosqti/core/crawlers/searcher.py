@@ -45,6 +45,7 @@ class Searcher(BaseCrawler):
         mode: Literal["cpf", "cnpj"] = "cpf",
         _filter: CNPJSearchFilter | CPFSearchFilter | None = None,
         max_results: bool = False,
+        raise_for_captcha: bool = True,
     ) -> List[CpfSearchResult | CnpjSearchResult]:
         """
         Executa uma busca no Portal da Transparência, retornando os resultados estruturados.
@@ -54,16 +55,24 @@ class Searcher(BaseCrawler):
             mode (Literal["cpf", "cnpj"]): Modo de busca (pessoa física ou jurídica).
             _filter (CNPJSearchFilter | CPFSearchFilter, optional): Filtro adicional de busca.
             max_results (bool): Se True, percorre todas as páginas até 200 resultados. Defaults to False.
+            raise_for_captcha (bool): Se True, levanta uma exceção se um captcha for detectado. Defaults to True.
 
         Returns:
             List[CpfSearchResult | CnpjSearchResult]: Lista de resultados da busca.
         """
         url = self.build_query_url(query, mode=mode, _filter=_filter)
 
-        # Adiciona os headers customizados
-        await self.page.set_extra_http_headers(self.default_headers)
-
         await self.page.goto(url)
+
+        # Verifica se a página contém um captcha
+        if await self.captcha_check_detector(self.page):
+            self.logger.critical(
+                "Operação bloqueada por captcha. Verifique manualmente o site.",
+                extra={"url": url},
+            )
+            if raise_for_captcha:
+                raise Exception("Captcha detectado na página.")
+            return []
 
         # Aguarda o carregamento da página
         await self.safe_load(self.page)
@@ -75,7 +84,7 @@ class Searcher(BaseCrawler):
         results_count = await self.parse_results_count(results_count_element)
         if results_count == 0:
             return []
-
+        
         page_count = self.__calculate_page_count(results_count) if max_results else 1
 
         all_results = []
@@ -290,8 +299,6 @@ class Searcher(BaseCrawler):
                 results_count == -1
             ):  # neste caso, o elemento foi encontrado, mas o texto é um placeholder
                 await self.safe_load(page, timeout=timeout)
-            else:
-                print("A busca não retornou resultados")
 
     def __resolve_mode(self, mode: str) -> str:
         """

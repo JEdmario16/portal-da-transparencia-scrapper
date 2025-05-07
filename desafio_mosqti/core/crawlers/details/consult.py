@@ -45,31 +45,32 @@ class ConsultDetails(BaseDetails):
 
     selector = ConsultDetailsSelector()
 
-    async def fetch(self, url: str, recursive: bool = False):
+    async def fetch(self, url: str, recursive: bool = False, raise_for_captcha: bool = True):
         """
         Coleta os dados de uma página de consulta do Portal da Transparência.
 
         Args:
             url (str): URL da página de consulta.
             recursive (bool, optional): Se True, percorre todas as páginas disponíveis. Defaults to False.
+            raise_for_captcha (bool, optional): Se True, levanta uma exceção se um captcha for detectado. Defaults to True.
 
         Returns:
             list[dict]: Lista de registros coletados, cada registro representado como um dicionário.
         """
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
 
-            page = await browser.new_page()
-            # Adiciona os headers customizados
-            await page.set_extra_http_headers(self.default_headers)
+        await self.page.goto(url)
 
-            await page.goto(url)
+        # Verifica se a página contém um captcha
+        if await self.captcha_check_detector(self.page):
+            self.logger.warning("Captcha detectado na página.")
+            if raise_for_captcha:
+                raise Exception("Captcha detectado na página.")
 
-            data = await self.collect_data(
-                page, include_header=True, recursive=recursive
-            )
-            await browser.close()
-            return data
+        data = await self.collect_data(
+            self.page, include_header=True, recursive=recursive
+        )
+        await self.page.close()
+        return data
 
     async def collect_data(
         self,
@@ -86,7 +87,7 @@ class ConsultDetails(BaseDetails):
             page (Page): Página atual de consulta.
             include_header (bool, optional): Se True, inclui os cabeçalhos da tabela no início dos dados. Defaults to False.
             recursive (bool, optional): Se True, coleta dados de todas as páginas disponíveis. Defaults to False.
-
+            set_max_results (bool, optional): Se True, define o número máximo de resultados por página. Defaults to True.
         Returns:
             list[dict]: Dados coletados da(s) página(s).
         """
@@ -246,14 +247,12 @@ class ConsultDetails(BaseDetails):
         results_per_page = await page.query_selector(self.selector.results_per_time)
 
         if not results_per_page:
-            raise ValueError(
-                "Elemento de seleção de resultados por página não encontrado."
+            self.logger.warning(
+                " o argumento `set_max_results_per_page = True` foi definido, mas o seletor não foi encontrado na página."
             )
+            return
 
         await results_per_page.scroll_into_view_if_needed()
-
-        if not results_per_page:
-            return
 
         # Define a quantidade de resultados por página
         await results_per_page.select_option(str(MAX_RESULTS_PER_PAGE))

@@ -60,7 +60,7 @@ class TabularDetails(BaseDetails):
 
     selector = TabularDetailsSelector()
 
-    async def fetch(self, url: str, **kwargs):
+    async def fetch(self, url: str, raise_for_captcha: bool = True, **kwargs) -> dict[str, Any]:
         """
         Coleta todos os dados de uma página tabular do Portal da Transparência.
 
@@ -70,38 +70,48 @@ class TabularDetails(BaseDetails):
 
         Args:
             url (str): URL da página tabular.
+            raise_for_captcha (bool, optional): Se True, levanta uma exceção se um captcha for detectado. Defaults to True.
 
         Returns:
             dict: Dicionário contendo os dados extraídos da página, com as chaves normalizadas.
         """
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
-            page = await browser.new_page()
-            await page.set_extra_http_headers(self.default_headers)
-            await page.goto(url)
+        await self.page.goto(url)
 
-            # Espera a página carregar
-            await page.wait_for_load_state("networkidle")
+        # Espera a página carregar
+        await self.page.wait_for_load_state("networkidle")
 
-            # ativa todos os detalhes
-            await self.__activate_all_detailed_sections(page)
-
-            # coleta os dados
-            tabulated_data = await self.__collect_data_from_tabulated_section(page)
-
-            dateiled_data = await self.__collect_data_from_detailed_section(page)
-
-            await browser.close()
-
-            data = {
-                "dados_tabelados": tabulated_data,
-                "dados_detalhados": dateiled_data,
+        # Verifica se a página contém um captcha
+        if await self.captcha_check_detector(self.page):
+            self.logger.critical(
+                "Captcha detectado. A página não pode ser processada.",
+                extra={"url": url},
+            )
+            if raise_for_captcha:
+                raise Exception("Captcha detectado na página.")
+            
+            return {
+                "error": "Registros foram encontrados, mas a página não pode ser processada.",
+                "url": url,
+                "identifier": "captcha_detected",
             }
 
-            # Normaliza as chaves
-            data = await self.__normalize_keys(data)
+        # ativa todos os detalhes
+        await self.__activate_all_detailed_sections(self.page)
 
-            return data
+        # coleta os dados
+        tabulated_data = await self.__collect_data_from_tabulated_section(self.page)
+
+        dateiled_data = await self.__collect_data_from_detailed_section(self.page)
+
+        data = {
+            "dados_tabelados": tabulated_data,
+            "dados_detalhados": dateiled_data,
+        }
+
+        # Normaliza as chaves
+        data = await self.__normalize_keys(data)
+
+        return data
 
     async def __activate_all_detailed_sections(self, page: Page):
         """
@@ -115,7 +125,6 @@ class TabularDetails(BaseDetails):
         """
 
         sections = await page.query_selector_all(self.selector.dados_detalhados)
-        print(f"sections: {len(sections)}")
 
         if not sections:
             return
@@ -133,7 +142,6 @@ class TabularDetails(BaseDetails):
             )
             if button:
                 await button.click()
-            print("section expanded")
 
     async def __collect_data_from_tabulated_section(self, page: Page) -> dict:
         """
@@ -177,7 +185,6 @@ class TabularDetails(BaseDetails):
             dict: Dicionário contendo os dados extraídos por seção.
         """
         sections = await page.query_selector_all(self.selector.dados_detalhados)
-        print(f"sections: {len(sections)}")
         if not sections:
             return {}
 
@@ -212,7 +219,6 @@ class TabularDetails(BaseDetails):
                 )
             data[title] = inner_section_data
 
-            print(f"section: {title}")
         return data
 
     async def __extact_data_block(self, datablock: ElementHandle) -> dict:

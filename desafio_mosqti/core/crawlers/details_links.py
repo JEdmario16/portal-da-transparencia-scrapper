@@ -36,9 +36,6 @@ class DetailsLinks(BaseCrawler):
 
     async def fetch(self, url: str):
 
-        # Adiciona os headers customizados
-        await self.page.set_extra_http_headers(self.default_headers)
-
         await self.page.goto(url)
 
         # espera a página carregar
