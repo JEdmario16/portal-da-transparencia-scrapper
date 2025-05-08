@@ -3,16 +3,13 @@ import re
 from typing import List, Literal
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
-    ElementHandle,
-    Locator,
-    Page,
-    async_playwright,
-)
+    ElementHandle, Locator, Page, async_playwright)
 
 from desafio_mosqti.core.elements_selectors.selector import Selector
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
-from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
+from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
+                                                       CpfSearchResult)
 
 
 class Searcher(BaseCrawler):
@@ -84,7 +81,7 @@ class Searcher(BaseCrawler):
         results_count = await self.parse_results_count(results_count_element)
         if results_count == 0:
             return []
-        
+
         page_count = self.__calculate_page_count(results_count) if max_results else 1
 
         all_results = []

@@ -2,7 +2,8 @@ import asyncio
 
 from playwright.async_api import ElementHandle, Page, async_playwright
 
-from desafio_mosqti.core.elements_selectors.selector import ConsultDetailsSelector
+from desafio_mosqti.core.elements_selectors.selector import \
+    ConsultDetailsSelector
 from desafio_mosqti.core.interfaces.base_details import BaseDetails
 
 
@@ -45,7 +46,9 @@ class ConsultDetails(BaseDetails):
 
     selector = ConsultDetailsSelector()
 
-    async def fetch(self, url: str, recursive: bool = False, raise_for_captcha: bool = True):
+    async def fetch(
+        self, url: str, recursive: bool = False, raise_for_captcha: bool = True
+    ):
         """
         Coleta os dados de uma página de consulta do Portal da Transparência.
 

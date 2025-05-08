@@ -60,7 +60,9 @@ class TabularDetails(BaseDetails):
 
     selector = TabularDetailsSelector()
 
-    async def fetch(self, url: str, raise_for_captcha: bool = True, **kwargs) -> dict[str, Any]:
+    async def fetch(
+        self, url: str, raise_for_captcha: bool = True, **kwargs
+    ) -> dict[str, Any]:
         """
         Coleta todos os dados de uma página tabular do Portal da Transparência.
 
@@ -84,11 +86,11 @@ class TabularDetails(BaseDetails):
         if await self.captcha_check_detector(self.page):
             self.logger.critical(
                 "Captcha detectado. A página não pode ser processada.",
-                extra={"url": url},
+                extra={"url": url, "page_title": await self.page.title()},
             )
             if raise_for_captcha:
                 raise Exception("Captcha detectado na página.")
-            
+
             return {
                 "error": "Registros foram encontrados, mas a página não pode ser processada.",
                 "url": url,
@@ -110,7 +112,6 @@ class TabularDetails(BaseDetails):
 
         # Normaliza as chaves
         data = await self.__normalize_keys(data)
-
         return data
 
     async def __activate_all_detailed_sections(self, page: Page):
@@ -217,6 +218,8 @@ class TabularDetails(BaseDetails):
                 inner_section_data[f"datatable_{title}"] = (
                     await self.__extract_data_table(data_table_el)
                 )
+
+            data["evidence"] = await self.take_evidence(section)
             data[title] = inner_section_data
 
         return data
@@ -366,7 +369,11 @@ class TabularDetails(BaseDetails):
 
 async def main():
     # url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
-    url = "https://portaldatransparencia.gov.br/notas-fiscais/25231008761132000148558929001316531207162194?ordenarPor=dataEvento&direcao=asc"
+    # url = "https://portaldatransparencia.gov.br/notas-fiscais/25231008761132000148558929001316531207162194?ordenarPor=dataEvento&direcao=asc"
+    url = (
+        "https://portaldatransparencia.gov.br/beneficios/auxilio-emergencial/223053559?"
+    )
+
     tabular_details = TabularDetails(page=None)
     data = await tabular_details.fetch(url)
     print(data)

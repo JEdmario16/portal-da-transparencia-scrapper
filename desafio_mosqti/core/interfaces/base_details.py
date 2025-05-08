@@ -1,4 +1,8 @@
+from playwright.async_api import ElementHandle
+
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
+
+import base64
 
 
 class BaseDetails(BaseCrawler):
@@ -26,3 +30,20 @@ class BaseDetails(BaseCrawler):
             dict: Dicionário com os dados coletados.
         """
         raise NotImplementedError("Método fetch não implementado.")
+
+    async def take_evidence(self, element: ElementHandle) -> str:
+        """
+        Tira uma captura de tela do elemento fornecido e retorna a imagem em base64.
+
+        Args:
+            element (ElementHandle): Elemento da página a ser salvo como evidência.
+
+        Returns:
+            str: Imagem em base64.
+        """
+        img = await element.screenshot()
+
+        # transformar a imagem em base64
+        base64_img = base64.b64encode(img).decode("utf-8")
+
+        return base64_img

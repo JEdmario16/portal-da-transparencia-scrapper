@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Literal, Optional, Union
+import random
+import re
+from typing import TYPE_CHECKING, Literal, Optional, Union
+from urllib.parse import urlparse
 
 from playwright.async_api import Browser, BrowserContext, Page, async_playwright
 
@@ -10,19 +13,19 @@ from desafio_mosqti.core.crawlers import (
     Searcher,
     TabularDetails,
 )
-from desafio_mosqti.core.elements_selectors.selector import DetailPageDetectionSelector
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
 from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
 
-import random
-import re
-from urllib.parse import urlparse
-
-from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from loguru import Logger
+
     from desafio_mosqti.core.interfaces.base_details import BaseDetails
+
+# permite rodar o código em modo assíncrono no debugger
+import nest_asyncio
+
+import json
+
 
 class PortalTransparencia:
     """
@@ -32,6 +35,7 @@ class PortalTransparencia:
     e coleta dos dados detalhados (TabularDetails, ConsultDetails). Permite a coleta de dados em lote
     com randomização de contexto (user-agent, timezone, etc) para evitar bloqueios e fingerprinting.
     """
+
     # Mapeamento estático de caminhos de URL para a classe de detalhamento correspondente.
     DETAIL_PAGE_MAP = {
         # Dados tabulares
@@ -89,6 +93,29 @@ class PortalTransparencia:
         "es-ES",
     ]
 
+    # Script de injeção para evitar detecção de automação
+    # e contornar bloqueios de segurança do navegador.
+    SCRIPT_INJECTION = """
+            // navigator.webdriver = undefined
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+
+            // Plugins falsos
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3],
+            });
+
+            // Idiomas
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en'],
+            });
+
+            // Simular chrome.runtime
+            window.chrome = {
+                runtime: {},
+            };
+    """
 
     def __init__(self, headless: bool = False, logger: Logger | None = None):
         """
@@ -105,7 +132,9 @@ class PortalTransparencia:
         self.headless = headless
 
         if not logger:
-            from desafio_mosqti.core.loger import logger
+            from desafio_mosqti.core.loger import logger as default_logger
+
+            logger = default_logger
 
         self.logger = logger
 
@@ -116,8 +145,19 @@ class PortalTransparencia:
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch(
             headless=self.headless,
-            ignore_default_args=["--enable-automation"],
-            args=["--no-sandbox", "--disable-setuid-sandbox"],
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-web-security",
+                "--disable-features=IsolateOrigins,site-per-process",
+                "--disable-blink-features=AutomationControlled",
+            ],
+            ignore_default_args=[
+                "--enable-automation",
+                "--enable-logging",
+                "--disable-dev-shm-usage",
+                "--disable-infobars",
+            ],
         )
         self.contexts = []
         self.pages = []
@@ -151,6 +191,7 @@ class PortalTransparencia:
         self.browser = None
         self.contexts = []
         self.pages = []
+
     async def __randomize_context(self, browser: Browser) -> BrowserContext:
         """
         Cria um novo contexto de navegador com fingerprint aleatório para evitar bloqueios.
@@ -171,9 +212,11 @@ class PortalTransparencia:
             "has_touch": random.choice([True, False]),
         }
         # Cria um novo contexto com os dados aleatórios
-        return await browser.new_context(
+        ctx = await browser.new_context(
             **ctx_data,
         )
+
+        return ctx
 
     async def __new_page(self) -> Page:
         """
@@ -187,6 +230,10 @@ class PortalTransparencia:
         self.contexts.append(context)
         # Cria uma nova página no contexto
         page = await context.new_page()
+
+        # Define o script de injeção para evitar detecção de automação
+        await page.add_init_script(self.SCRIPT_INJECTION)
+
         self.pages.append(page)
         return page
 
@@ -227,7 +274,6 @@ class PortalTransparencia:
 
             if search_result_limit:
                 search_results = search_results[:search_result_limit]
-                
 
         self.logger.debug(
             f"Search result retuned successfully", extra={"count": len(search_results)}
@@ -235,7 +281,7 @@ class PortalTransparencia:
 
         if len(search_results) > 10 and extract_details:
             self.logger.warning(
-                "Mais de 10 resultados encontrados. Extraindo detalhes pode levar um tempo considerável e pode causar bloqueios." \
+                "Mais de 10 resultados encontrados. Extraindo detalhes pode levar um tempo considerável e pode causar bloqueios."
                 "Experimente usar filtros para reduzir o número de resultados, ou limitar os resultados de busca.",
             )
 
@@ -247,8 +293,10 @@ class PortalTransparencia:
                     extra={"url": result.get("url")},
                 )
 
-                details, err_count = await self.__extract_all_details_from_search_result_links(
-                    result["links"],
+                details, err_count = (
+                    await self.__extract_all_details_from_search_result_links(
+                        result["links"],
+                    )
                 )
                 self.logger.debug(
                     f"Details fetched successfully",
@@ -267,18 +315,31 @@ class PortalTransparencia:
     async def __extract_all_details_from_search_result_links(
         self,
         search_result_links: dict,
+        *,
+        retries: int = 10,
     ) -> tuple[dict, int]:
         details = {}
         errors = 0
         for op_name, link in search_result_links.items():
-            detail = await self.__extract_detail(
-                url=link,
-                page=self.page,
-            )
+            for attempt in range(retries):
+                try:
+                    should_raise_for_captcha = attempt < retries - 1
+                    detail = await self.__extract_detail(
+                        url=link,
+                        page=self.page,
+                        should_raise_for_captcha=should_raise_for_captcha,
+                    )
+                    break
+                except Exception as e:
+                    self.logger.warning(
+                        f"Falha ao extrair detalhes (tentativa {attempt + 1} de {retries}): {e}",
+                    )
+                    attempt += 1
+                    await asyncio.sleep(2**attempt)  # Exponential backoff
             if detail:
                 details[op_name] = detail
 
-            if 'error' in detail:
+            if "error" in detail:
                 errors += 1
         return details, errors
 
@@ -287,28 +348,18 @@ class PortalTransparencia:
         url: str,
         *,
         page: Page | None = None,
-        retries: int = 10,
+        should_raise_for_captcha: bool = True,
     ):
-        for attempt in range(retries):
-            try:
-                page = page or await self.__new_page()
-                detail_page_class = await self.__discover_detail_page(url)
-                if detail_page_class:
-                    async with detail_page_class(page=page) as detail_page_cls:
-                        should_raise_for_captcha = attempt > retries # do not raise when last attempt
-                        return  await detail_page_cls.fetch(
-                            url=url,
-                            recursive=True,
-                            raise_for_captcha= should_raise_for_captcha,
-                        )
-            except Exception as e:
-                self.logger.warning(
-                    f"Falaha ao extrair detalhes (tentativa {attempt + 1} de {retries}): {e}",
+        page = page or await self.__new_page()
+        detail_page_class = await self.__discover_detail_page(url)
+        if detail_page_class:
+            async with detail_page_class(page=page) as detail_page_cls:
+                return await detail_page_cls.fetch(
+                    url=url,
+                    recursive=True,
+                    raise_for_captcha=should_raise_for_captcha,
                 )
-                attempt += 1
-                await asyncio.sleep(2 ** attempt)  # Exponential backoff
-        return None
-    
+
     async def __get_details_links(
         self,
         search_result: list[Union[CpfSearchResult, CnpjSearchResult]],
@@ -376,7 +427,7 @@ class PortalTransparencia:
 
         if f"{parts[0]}/consulta" in self.DETAIL_PAGE_MAP:
             return self.DETAIL_PAGE_MAP[f"{parts[0]}/consulta"]
-        
+
         self.logger.warning(
             f"Não foi possível descobrir a página de detalhes: {path} não está mapeado",
             extra={"url": url},
@@ -399,7 +450,8 @@ async def main():
                 sancao_vigente=True,
             ),
         )
-        print(cpf_result)
+        with open("cpf_result.json", "w") as f:
+            json.dump(cpf_result, f, indent=4)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
-import loguru
 import sys
 import time
+
+import loguru
 
 logger = loguru.logger
 logger.remove()

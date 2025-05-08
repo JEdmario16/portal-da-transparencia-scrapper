@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from playwright.async_api import Page, BrowserContext
     from logging import Logger
+
+    from playwright.async_api import BrowserContext, Page
 
 
 class BaseCrawler(ABC):
