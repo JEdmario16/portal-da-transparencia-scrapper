@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
@@ -28,6 +28,16 @@ class CpfSearchResult(BaseModel):
     Tipo de benefício.
     """
 
+    details: dict[str, Any] | None = None
+    """
+    Detalhes adicionais sobre o beneficiário, se disponíveis.
+    """
+
+    details_links: dict[str, str] | None = None
+    """
+    Links para detalhes adicionais, se disponíveis.
+    """
+
 
 class CnpjSearchResult(BaseModel):
     """
@@ -55,4 +65,14 @@ class CnpjSearchResult(BaseModel):
     muni_uf: str
     """
     Município e UF da empresa, formatado como "Município/UF".
+    """
+
+    details: dict[str, Any] | None = None
+    """
+    Detalhes adicionais sobre a empresa, se disponíveis.
+    """
+
+    details_links: dict[str, str] | None = None
+    """
+    Links para detalhes adicionais, se disponíveis.
     """

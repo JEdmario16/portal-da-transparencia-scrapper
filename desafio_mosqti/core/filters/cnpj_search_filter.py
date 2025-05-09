@@ -71,11 +71,11 @@ class CNPJSearchFilter(base_filter.BaseFilter):
     Nota: Existe um bug no portal em que esse filtro não irá funcionar, mas a busca irá redirecionar para uma página
     de erro 400(?). Chamando a API diretamente, o filtro funciona.
     """
-    sancao_vigente: bool = False
+    sancao_vigente: bool | None = False
     """
     Se o CNPJ está sob sanção vigente.
     """
-    emitente_nfe: bool = False
+    emitente_nfe: bool | None = False
     """
     Se o CNPJ é emitente de NFE.
     """

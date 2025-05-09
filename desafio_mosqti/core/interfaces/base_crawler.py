@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+import random
+import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from functools import wraps
+from typing import TYPE_CHECKING, Self
 
 if TYPE_CHECKING:
     from logging import Logger
 
-    from playwright.async_api import BrowserContext, Page
+    from playwright.async_api import Page
 
 
 class BaseCrawler(ABC):
@@ -15,16 +19,13 @@ class BaseCrawler(ABC):
     """
 
     def __init__(self, page: Page, logger: Logger | None = None):
-        self.page = page
-        self.ctx: BrowserContext = page.context
-
         if not logger:
             from desafio_mosqti.core.loger import logger as default_logger
 
             logger = default_logger
         self.logger = logger
-
-        super().__init__()
+        self.page = page
+        self.ctx = page.context
 
     @property
     @abstractmethod
@@ -68,7 +69,7 @@ class BaseCrawler(ABC):
             return True
         return False
 
-    async def __aenter__(self) -> BaseCrawler:
+    async def __aenter__(self) -> Self:
         """
         Método chamado ao entrar no contexto do gerenciador de contexto.
         """
@@ -78,5 +79,4 @@ class BaseCrawler(ABC):
         """
         Método chamado ao sair do contexto do gerenciador de contexto.
         """
-        await self.page.close()
-        await self.ctx.close()
+        ...

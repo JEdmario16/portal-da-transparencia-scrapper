@@ -1,8 +1,8 @@
+import base64
+
 from playwright.async_api import ElementHandle
 
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
-
-import base64
 
 
 class BaseDetails(BaseCrawler):

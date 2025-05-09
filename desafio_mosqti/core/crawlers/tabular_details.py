@@ -3,7 +3,8 @@ from typing import Any
 
 from playwright.async_api import ElementHandle, Page, async_playwright
 
-from desafio_mosqti.core.elements_selectors.selector import TabularDetailsSelector
+from desafio_mosqti.core.elements_selectors.selector import \
+    TabularDetailsSelector
 from desafio_mosqti.core.interfaces.base_details import BaseDetails
 
 
@@ -365,19 +366,3 @@ class TabularDetails(BaseDetails):
             else:
                 normalized_data[normalized_key] = value
         return normalized_data
-
-
-async def main():
-    # url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
-    # url = "https://portaldatransparencia.gov.br/notas-fiscais/25231008761132000148558929001316531207162194?ordenarPor=dataEvento&direcao=asc"
-    url = (
-        "https://portaldatransparencia.gov.br/beneficios/auxilio-emergencial/223053559?"
-    )
-
-    tabular_details = TabularDetails(page=None)
-    data = await tabular_details.fetch(url)
-    print(data)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

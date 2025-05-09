@@ -1,0 +1,69 @@
+site_name: Scrapper Portal da Transparência Docs
+plugins: 
+  - search
+  - glightbox
+  - mkdocs-material-insight:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_root_full_name: true
+            show_root_full_name_link: true
+            show_root_heading_link: true
+            show_root_heading_icon: true
+            show_root_heading_icon_link: true
+            show_root_heading_icon_link_text: true
+            show_root_heading_icon_link_text_color: true
+            show_root_heading_icon_link_text_color_value: '#000000'
+            show_root_heading_icon_link_text_color_value_dark: '#FFFFFF'
+            show_root_heading_icon_link_text_color_value_light: '#000000'
+            show_root_heading_icon_link_text_color_value_dark_light: '#FFFFFF'
+        setup_commands:
+          - import sys; sys.path.append('.')
+
+markdown_extensions: 
+
+  - attr_list
+  - admonition
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+      title: Table of Contents
+      separator: '-'
+  - codehilite:
+      guess_lang: false
+      use_pygments: true
+    
+
+theme: 
+  name: material
+  highlightjs: true
+  palette:
+    scheme: default
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.expand
+    - navigation.sections
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.tracking
+    - navigation.search.highlight
+    - navigation.search.suggest
+    - navigation.search.share
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/overview.md
+      - Installation: getting-started/installation.md
+      - Configuration: getting-started/configuration.md

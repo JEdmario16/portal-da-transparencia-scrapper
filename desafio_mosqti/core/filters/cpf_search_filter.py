@@ -6,39 +6,39 @@ class CPFSearchFilter(base_filter.BaseFilter):
     Esquema para o filtro de CPF.
     """
 
-    servidor_publico: bool = False
+    servidor_publico: bool | None = False
     """
     Se o CPF é de um servidor público.
     """
-    beneficiario_programa_social: bool = False
+    beneficiario_programa_social: bool | None = False
     """
     Se o CPF é de um beneficiário de programa social.
     """
-    portador_cpgf: bool = False
+    portador_cpgf: bool | None = False
     """
     Se o CPF é de um portador do CPGF.
     """
-    portador_cpdc: bool = False
+    portador_cpdc: bool | None = False
     """
     Se o CPF é de um portador do CPDC.
     """
-    sancao_vigente: bool = False
+    sancao_vigente: bool | None = False
     """
     Se o CPF está sob sanção vigente.
     """
-    ocupante_imovel_funcional: bool = False
+    ocupante_imovel_funcional: bool | None = False
     """
     Se o CPF ocupa imóvel funcional.
     """
-    possui_contrato: bool = False
+    possui_contrato: bool | None = False
     """
     Se o CPF possui contrato.
     """
-    favorecido_recurso: bool = False
+    favorecido_recurso: bool | None = False
     """
     Se o CPF é favorecido de recurso público.
     """
-    emitente_nfe: bool = False
+    emitente_nfe: bool | None = False
     """
     Se o CPF é emitente de NFE.
     """

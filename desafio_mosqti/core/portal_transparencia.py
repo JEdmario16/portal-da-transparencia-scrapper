@@ -1,20 +1,18 @@
 from __future__ import annotations
 
+import asyncio
 import random
-import re
 from typing import TYPE_CHECKING, Literal, Optional, Union
 from urllib.parse import urlparse
 
-from playwright.async_api import Browser, BrowserContext, Page, async_playwright
+from playwright.async_api import (Browser, BrowserContext, Page,
+                                  async_playwright)
 
-from desafio_mosqti.core.crawlers import (
-    ConsultDetails,
-    DetailsLinks,
-    Searcher,
-    TabularDetails,
-)
+from desafio_mosqti.core.crawlers import (ConsultDetails, DetailsLinks,
+                                          Searcher, TabularDetails)
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.schemas.search_result import CnpjSearchResult, CpfSearchResult
+from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
+                                                       CpfSearchResult)
 
 if TYPE_CHECKING:
     from loguru import Logger
@@ -22,9 +20,9 @@ if TYPE_CHECKING:
     from desafio_mosqti.core.interfaces.base_details import BaseDetails
 
 # permite rodar o código em modo assíncrono no debugger
-import nest_asyncio
-
 import json
+
+import nest_asyncio
 
 
 class PortalTransparencia:
@@ -138,7 +136,7 @@ class PortalTransparencia:
 
         self.logger = logger
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> PortalTransparencia:
         """
         Inicializa o Playwright, navegador e prepara os contextos.
         """
@@ -242,7 +240,7 @@ class PortalTransparencia:
         query: str,
         *,
         mode: Literal["cpf", "cnpj"] = "cpf",
-        max_results: bool = True,
+        force_max_results: bool = False,
         _filter: Optional[Union[CPFSearchFilter, CNPJSearchFilter]] = None,
         extract_details: bool = False,
         search_result_limit: int | None = None,
@@ -255,12 +253,12 @@ class PortalTransparencia:
         Args:
             query (str): CPF ou CNPJ a ser pesquisado.
             mode (Literal["cpf", "cnpj"], optional): Modo de pesquisa. Defaults to "cpf".
-            max_results (bool, optional): Se True, limita o número de resultados por página para o máximo permitido. Defaults to True.
+            force_max_results (bool, optional): Se True, limita o número de resultados por página para o máximo permitido. Defaults to True.
             _filter (Optional[Union[CPFSearchFilter, CNPJSearchFilter]], optional): Filtro a ser aplicado. Defaults to None.
             extract_details (bool, optional): Se True, extrai os detalhes dos resultados. Defaults to False.
-
+            search_result_limit (int | None, optional): Limite de resultados a serem retornados. Defaults to None.
         Returns:
-            list[Union[CpfSearchResult, CnpjSearchResult]]: Lista de resultados da pesquisa.
+            list[Union[CpfSearchResult, CnpjSearchResult]: Lista de resultados da pesquisa.
         """
         page = await self.__new_page()
 
@@ -268,8 +266,9 @@ class PortalTransparencia:
             search_results = await searcher.search(
                 query,
                 mode=mode,
-                max_results=max_results,
+                force_max_results=force_max_results,
                 _filter=_filter,
+                limit_results=search_result_limit,
             )
 
             if search_result_limit:
@@ -437,10 +436,10 @@ class PortalTransparencia:
 
 async def main():
 
-    async with PortalTransparencia(headless=True) as portal:
+    async with PortalTransparencia(headless=False) as portal:
         # Exemplo de busca por CPF
         cpf_result = await portal.search(
-            "",
+            query="",
             mode="cpf",
             max_results=False,
             extract_details=True,

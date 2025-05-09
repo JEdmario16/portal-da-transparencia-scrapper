@@ -3,7 +3,7 @@ import re
 from typing import List, Literal
 
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
-    ElementHandle, Locator, Page, async_playwright)
+    ElementHandle, Locator, Page)
 
 from desafio_mosqti.core.elements_selectors.selector import Selector
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
@@ -41,8 +41,11 @@ class Searcher(BaseCrawler):
         *,
         mode: Literal["cpf", "cnpj"] = "cpf",
         _filter: CNPJSearchFilter | CPFSearchFilter | None = None,
-        max_results: bool = False,
+        force_max_results: bool = False,
         raise_for_captcha: bool = True,
+        limit_results: int | None = None,
+        max_retries: int = 3,
+        jitter: bool = False,
     ) -> List[CpfSearchResult | CnpjSearchResult]:
         """
         Executa uma busca no Portal da Transparência, retornando os resultados estruturados.
@@ -51,16 +54,28 @@ class Searcher(BaseCrawler):
             query (str): Termo a ser buscado (CPF ou CNPJ).
             mode (Literal["cpf", "cnpj"]): Modo de busca (pessoa física ou jurídica).
             _filter (CNPJSearchFilter | CPFSearchFilter, optional): Filtro adicional de busca.
-            max_results (bool): Se True, percorre todas as páginas até 200 resultados. Defaults to False.
+            force_max_results (bool): Se True, percorre todas as páginas até 200 resultados. Defaults to False.
             raise_for_captcha (bool): Se True, levanta uma exceção se um captcha for detectado. Defaults to True.
+            limit_results (int | None): Caso informado, limitará a lista de resultados de busca para os N primeiros itens.
+                Defaults to None.
 
         Returns:
             List[CpfSearchResult | CnpjSearchResult]: Lista de resultados da busca.
         """
         url = self.build_query_url(query, mode=mode, _filter=_filter)
+        try:
+            await self.page.goto(url)
+        except Exception as e:
+            self.logger.error(
+                f"Erro ao acessar a URL: {url}. Detalhes: {e}",
+                extra={"url": url},
+            )
+            raise e
 
-        await self.page.goto(url)
-
+        self.logger.debug(
+            f"Aguardando carregamento da página: {url}",
+            extra={"url": url},
+        )
         # Verifica se a página contém um captcha
         if await self.captcha_check_detector(self.page):
             self.logger.critical(
@@ -71,8 +86,17 @@ class Searcher(BaseCrawler):
                 raise Exception("Captcha detectado na página.")
             return []
 
+        self.logger.debug(
+            f"Nenhum captcha detectado. Prosseguindo com a busca.",
+            extra={"url": url},
+        )
         # Aguarda o carregamento da página
         await self.safe_load(self.page)
+
+        self.logger.debug(
+            f"Página carregada com sucesso: {url}",
+            extra={"url": url},
+        )
 
         results_count_element = self.page.locator(
             selector=self.selector.results_count_selector
@@ -82,17 +106,33 @@ class Searcher(BaseCrawler):
         if results_count == 0:
             return []
 
-        page_count = self.__calculate_page_count(results_count) if max_results else 1
+        if limit_results and not force_max_results:
+            results_count = min(results_count, limit_results)
+
+        page_count = self.__calculate_page_count(results_count)
 
         all_results = []
 
-        async for result in self.paginate_results(self.page, page_count):
+        self.logger.debug(
+            f"Total de resultados encontrados: {results_count}. Total de páginas: {page_count}",
+            extra={"url": url},
+        )
+
+        async for i, result in self.paginate_results(
+            self.page, page_count, jitter=jitter, max_retries=max_retries
+        ):
+            self.logger.debug(
+                f"Processando página {i + 1} de {page_count}",
+                extra={"url": url},
+            )
             all_results.extend(result)
         return all_results
 
-    async def paginate_results(self, page: Page, total_pages: int):
+    async def paginate_results(
+        self, page: Page, total_pages: int, jitter: bool = False, max_retries: int = 3
+    ):
         for i in range(total_pages):
-            yield await self.parse_search_result_content(page)
+            yield i, await self.parse_search_result_content(page)
             await self.__go_to_next_page(page, i + 1, total_pages)
 
     async def fetch(self, page: Page) -> List[CpfSearchResult | CnpjSearchResult]:
@@ -147,9 +187,6 @@ class Searcher(BaseCrawler):
         container = await page.query_selector(self.selector.results)
         if not container:
             return []
-            raise ValueError(
-                "Não foi possível encontrar o container de resultados", page.url
-            )
 
         itens = await container.query_selector_all(self.selector.result_item)
         if not itens:
@@ -286,8 +323,10 @@ class Searcher(BaseCrawler):
         except Exception as _:
             # Se o timeout ocorrer, tenta extrair o elemento de contagem de resultados
             # para garantir que realmente não há resultados
+            await page.wait_for_selector(
+                self.selector.results_count_selector, timeout=timeout * 1000
+            )
             he = await page.query_selector(self.selector.results_count_selector)
-
             if not he:
                 raise ValueError("Não foi possível encontrar o elemento de resultados")
 
@@ -295,7 +334,7 @@ class Searcher(BaseCrawler):
             if (
                 results_count == -1
             ):  # neste caso, o elemento foi encontrado, mas o texto é um placeholder
-                await self.safe_load(page, timeout=timeout)
+                raise ValueError("Não foi possível encontrar o elemento de resultados")
 
     def __resolve_mode(self, mode: str) -> str:
         """
