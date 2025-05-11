@@ -1,11 +1,8 @@
-import asyncio
-
-from playwright.async_api import ElementHandle, Page, async_playwright
-
 from desafio_mosqti.core.elements_selectors.selector import \
     ConsultDetailsSelector
 from desafio_mosqti.core.interfaces.base_details import BaseDetails
 
+from playwright.async_api import Page, ElementHandle
 
 class ConsultDetails(BaseDetails):
     """
@@ -33,10 +30,13 @@ class ConsultDetails(BaseDetails):
         from desafio_mosqti.core.crawlers.details.consult import ConsultDetails
 
         async def main():
-            url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc" # exemplo com Cartão de Pagamento
-            consult_details = ConsultDetails()
-            data = await consult_details.fetch(url)
-            print(data)
+            with async_playwright() as p:
+                browser = await p.chromium.launch(headless=False)
+                page = await browser.new_page()
+                url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc" # exemplo com Cartão de Pagamento
+                consult_details = ConsultDetails(page=page)
+                data = await consult_details.fetch(url)
+                print(data)
 
         asyncio.run(main())
         ```
@@ -259,18 +259,3 @@ class ConsultDetails(BaseDetails):
 
         # Define a quantidade de resultados por página
         await results_per_page.select_option(str(MAX_RESULTS_PER_PAGE))
-
-
-async def main():
-    # url = "https://portaldatransparencia.gov.br/despesas/favorecido?faseDespesa=3&favorecido=7710354&ordenarPor=valor&direcao=desc"
-    # url = "https://portaldatransparencia.gov.br/cartoes/consulta?portador=7710354&ordenarPor=mesExtrato&direcao=desc"
-    # url = "https://portaldatransparencia.gov.br/despesas/pagamento/280101000012015NS001415?ordenarPor=fase&direcao=desc"
-    url = "https://portaldatransparencia.gov.br/emendas/consulta-por-documento?favorecido=32294033&ufFavorecido=PB&ordenarPor=tipoEmenda&direcao=desc"
-    consult_details = ConsultDetails(page=None)
-    data = await consult_details.fetch(url, recursive=True)
-    print(data)
-    print(len(data))
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

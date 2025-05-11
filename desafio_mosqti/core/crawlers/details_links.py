@@ -3,7 +3,8 @@ import asyncio
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
     ElementHandle, Page, async_playwright)
 
-from desafio_mosqti.core.elements_selectors.selector import CPFDetailsSelector
+from desafio_mosqti.core.elements_selectors.selector import \
+    DetailsLinksSelector
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 
 
@@ -31,12 +32,14 @@ class DetailsLinks(BaseCrawler):
 
     BASE_URL = "https://portaldatransparencia.gov.br"
 
+    selector = DetailsLinksSelector()
+
     async def fetch(self, url: str):
 
         await self.page.goto(url)
 
         # espera a página carregar
-        await self.page.wait_for_selector(CPFDetailsSelector.details_container)
+        await self.page.wait_for_selector(self.selector.details_container)
         data = await self.collect_all_details_links(self.page)
 
         return data
@@ -46,7 +49,7 @@ class DetailsLinks(BaseCrawler):
         Coleta todos os links de detalhes de cada CPF
         """
 
-        container = await page.query_selector(CPFDetailsSelector.details_container)
+        container = await page.query_selector(self.selector.details_container)
 
         if not container:
             return {}
@@ -55,7 +58,7 @@ class DetailsLinks(BaseCrawler):
         await self.__activate_all_accordions(container)
 
         itens_container = await container.query_selector_all(
-            CPFDetailsSelector.detail_row_container
+            self.selector.detail_row_container
         )
 
         if not itens_container:
@@ -79,7 +82,7 @@ class DetailsLinks(BaseCrawler):
         :return: None
 
         """
-        headers = await container.query_selector_all(CPFDetailsSelector.itens)
+        headers = await container.query_selector_all(self.selector.itens)
 
         if not headers:
             return
@@ -98,7 +101,7 @@ class DetailsLinks(BaseCrawler):
         # a partir do container, seleciona todas divs cujo id
         # começa com "accordion"
         accordions_rows = await container.query_selector_all(
-            CPFDetailsSelector.detail_row_container
+            self.selector.detail_row_container
         )
 
         if not accordions_rows:
@@ -122,9 +125,7 @@ class DetailsLinks(BaseCrawler):
                     )
                 continue
 
-            buttons = await accordion.query_selector_all(
-                CPFDetailsSelector.details_button
-            )
+            buttons = await accordion.query_selector_all(self.selector.details_button)
 
             if not buttons:  # TODO: log
                 continue
@@ -148,7 +149,7 @@ class DetailsLinks(BaseCrawler):
         que pode conter váras subseções com cada benefício(exemplo: "Bolsa Família", "Auxílio Brasil", etc).
         """
 
-        subsections = await accordion.query_selector_all(CPFDetailsSelector.subsection)
+        subsections = await accordion.query_selector_all(self.selector.subsection)
 
         if not subsections:
             return False
@@ -162,7 +163,7 @@ class DetailsLinks(BaseCrawler):
         """
 
         extra_row = await accordion.query_selector(
-            CPFDetailsSelector.beneficiary_federal_resources
+            self.selector.beneficiary_federal_resources
         )
         if not extra_row:
             return False
@@ -179,23 +180,21 @@ class DetailsLinks(BaseCrawler):
 
         # a partir do container, seleciona todas divs cujo id
         # começa com "accordion"
-        subsections = await accordion.query_selector_all(CPFDetailsSelector.subsection)
+        subsections = await accordion.query_selector_all(self.selector.subsection)
 
         if not subsections:
             return links
 
         for i, subsection in enumerate(subsections):
 
-            buttons = await subsection.query_selector_all(
-                CPFDetailsSelector.details_button
-            )
+            buttons = await subsection.query_selector_all(self.selector.details_button)
 
             if not buttons:
                 continue
 
             for i, button in enumerate(buttons):
                 title_el = await subsection.query_selector(
-                    CPFDetailsSelector.subsection_title
+                    self.selector.subsection_title
                 )
 
                 if not title_el:
@@ -227,14 +226,14 @@ class DetailsLinks(BaseCrawler):
         """
 
         container = await accordion.query_selector(
-            CPFDetailsSelector.beneficiary_federal_resources
+            self.selector.beneficiary_federal_resources
         )
 
         if not container:
             return {}
 
         title = await page.query_selector(
-            CPFDetailsSelector.beneficiary_federal_resources_title
+            self.selector.beneficiary_federal_resources_title
         )
 
         if not title:
@@ -243,7 +242,7 @@ class DetailsLinks(BaseCrawler):
             title = await title.inner_text()
             title = title.strip()
 
-        btn = await container.query_selector(CPFDetailsSelector.details_button)
+        btn = await container.query_selector(self.selector.details_button)
         if not btn:
             return {}
         link = await btn.get_attribute("href")

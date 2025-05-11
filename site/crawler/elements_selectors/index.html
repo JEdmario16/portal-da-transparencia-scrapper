@@ -1,0 +1,1789 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../filters/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+    
+    
+      
+        <title>Elements Selectors - Scrapper Portal da Transparência Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#elements-selectors" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Scrapper Portal da Transparência Docs" class="md-header__button md-logo" aria-label="Scrapper Portal da Transparência Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Scrapper Portal da Transparência Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Elements Selectors
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../portal_transparencia/" class="md-tabs__link">
+          
+  
+  
+  Crawler
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="http://localhost:7000/docs" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Scrapper Portal da Transparência Docs" class="md-nav__button md-logo" aria-label="Scrapper Portal da Transparência Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Scrapper Portal da Transparência Docs
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Crawler
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Crawler
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../portal_transparencia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Portal da Transparência
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../searcher/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Searcher
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../details/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Details
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Schemas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../filters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Filters
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Elements Selectors
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Elements Selectors
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of Contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      SearcherSelector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SearcherSelector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.resullt_item_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      resullt_item_info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item" class="md-nav__link">
+    <span class="md-ellipsis">
+      result_item
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item_link" class="md-nav__link">
+    <span class="md-ellipsis">
+      result_item_link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results" class="md-nav__link">
+    <span class="md-ellipsis">
+      results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results_count_selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      results_count_selector
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      DetailsLinksSelector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DetailsLinksSelector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      beneficiary_federal_resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources_title" class="md-nav__link">
+    <span class="md-ellipsis">
+      beneficiary_federal_resources_title
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.detail_row_container" class="md-nav__link">
+    <span class="md-ellipsis">
+      detail_row_container
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_button" class="md-nav__link">
+    <span class="md-ellipsis">
+      details_button
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_container" class="md-nav__link">
+    <span class="md-ellipsis">
+      details_container
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.itens" class="md-nav__link">
+    <span class="md-ellipsis">
+      itens
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection" class="md-nav__link">
+    <span class="md-ellipsis">
+      subsection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection_title" class="md-nav__link">
+    <span class="md-ellipsis">
+      subsection_title
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConsultDetailsSelector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ConsultDetailsSelector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.loading_selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      loading_selector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.next_page" class="md-nav__link">
+    <span class="md-ellipsis">
+      next_page
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.results_per_time" class="md-nav__link">
+    <span class="md-ellipsis">
+      results_per_time
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      table_headers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      table_selector
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.TabularDetailsSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      TabularDetailsSelector
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="http://localhost:7000/docs" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of Contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      SearcherSelector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SearcherSelector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.resullt_item_info" class="md-nav__link">
+    <span class="md-ellipsis">
+      resullt_item_info
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item" class="md-nav__link">
+    <span class="md-ellipsis">
+      result_item
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item_link" class="md-nav__link">
+    <span class="md-ellipsis">
+      result_item_link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results" class="md-nav__link">
+    <span class="md-ellipsis">
+      results
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results_count_selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      results_count_selector
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      DetailsLinksSelector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DetailsLinksSelector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      beneficiary_federal_resources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources_title" class="md-nav__link">
+    <span class="md-ellipsis">
+      beneficiary_federal_resources_title
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.detail_row_container" class="md-nav__link">
+    <span class="md-ellipsis">
+      detail_row_container
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_button" class="md-nav__link">
+    <span class="md-ellipsis">
+      details_button
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_container" class="md-nav__link">
+    <span class="md-ellipsis">
+      details_container
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.itens" class="md-nav__link">
+    <span class="md-ellipsis">
+      itens
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection" class="md-nav__link">
+    <span class="md-ellipsis">
+      subsection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection_title" class="md-nav__link">
+    <span class="md-ellipsis">
+      subsection_title
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      ConsultDetailsSelector
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ConsultDetailsSelector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.loading_selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      loading_selector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.next_page" class="md-nav__link">
+    <span class="md-ellipsis">
+      next_page
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.results_per_time" class="md-nav__link">
+    <span class="md-ellipsis">
+      results_per_time
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      table_headers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      table_selector
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#desafio_mosqti.core.elements_selectors.selector.TabularDetailsSelector" class="md-nav__link">
+    <span class="md-ellipsis">
+      TabularDetailsSelector
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="elements-selectors">Elements Selectors<a class="headerlink" href="#elements-selectors" title="Permanent link">&para;</a></h1>
+<p>As classes de seletores de elementos são simples dataclasses que definem os seletores como atributos. Desta forma, é possível referenciar aos seletores de forma mais legível e sem deixá-las hardcoded no código. Para facilitar o desenvolvimento, os atributos de classe são tipados como <code>Literal</code>, o que permite utilizar o editor para autocompletar os seletores disponíveis.
+Além disso, pelo fato de serem dataclasses em um arquivo separado, é possível utilizar docstrings para documentar os seletores, o que facilita a manutenção e compreensão do código.</p>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="desafio_mosqti.core.elements_selectors.selector.SearcherSelector" class="doc doc-heading">
+            <code>desafio_mosqti.core.elements_selectors.selector.SearcherSelector</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Classe para armazenar os seletores de busca.</p>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.SearcherSelector.resullt_item_info" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">resullt_item_info</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div.col-sm-12&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div.col-sm-12&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.resullt_item_info" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Representa uma linha no card de resultados. Trata-se de uma classe do bootstrap, então
+deve ser utilziada com cuidado, preferencialmente á partir o pai.
+Por exemplo: <code>Selector.result_item</code> &gt; div.col-sm-12 irá pegar todas as linhas
+do card de resultado.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">result_item</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div.br-item&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div.br-item&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor da div que contém os dados do resultado da busca</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item_link" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">result_item_link</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;a.link-busca-nome&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;a.link-busca-nome&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.result_item_link" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor a url do recurso encontrado na busca</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">results</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;span#resultados&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;span#resultados&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor do container com os intens do resultado da busca.
+Pode ser utilizado para detectar se a página carregou ou extrair os dados do resultado da busca</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results_count_selector" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">results_count_selector</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;xpath=/html/body/main/div/div[2]/div[2]/div[2]/div[1]/div/div/div[2]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;xpath=/html/body/main/div/div[2]/div[2]/div[2]/div[1]/div/div/div[2]&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.SearcherSelector.results_count_selector" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor do elemento que informa a quantidade de resultados a busca trouxe. Como trata-se
+de um xpath, pode ser utilizado diretamente de <code>Page</code> ou de um <code>ElementHandle</code> que contém
+este elemento.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector" class="doc doc-heading">
+            <code>desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Seletor para detalhes de CPF.</p>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">beneficiary_federal_resources</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div.row &gt; div.col-xs-12&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div.row &gt; div.col-xs-12&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Este seletor é utilizado para tratar um side-case:
+A seção "Recebimento de Recursos" possui dados tanto de benefícios
+quanto de recebimentos de recursos, em um layout diferente.
+Este seletor é utilizado para obter os dados de recebimentos de recursos.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources_title" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">beneficiary_federal_resources_title</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;xpath=/html/body/main/div/div[2]/div[2]/div/div[2]/div/div/strong&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;xpath=/html/body/main/div/div[2]/div[2]/div/div[2]/div/div/strong&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.beneficiary_federal_resources_title" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Este seletor é utilizado para tratar um side-case:
+A seção "Recebimento de Recursos" possui dados tanto de benefícios
+quanto de recebimentos de recursos, em um layout diferente.
+Este seletor é utilizado para obter o título da seção de recebimentos de recursos.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.detail_row_container" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">detail_row_container</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div[id^=&quot;accordion&quot;]&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div[id^=&quot;accordion&quot;]&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.detail_row_container" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Assim que os accordions são expandidos, suas informações estão disponíveis
+em uma div com o id começando com "accordion".
+Exemplo: <code>accordion-bolsa-familia</code>, <code>accordion-cartao-pagamento</code>, etc.
+Esse seletor obtém essa(s) div(s).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_button" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">details_button</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a.br-button&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_button" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Cada <code>accordion</code> possui um botão de detalhes, que por sua vez contém um link para uma 
+página de detalhes. Este seletor obtém esse botão.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_container" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">details_container</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;#accordion1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;#accordion1&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.details_container" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Container que contém todos os <code>accordions</code> de detalhes.
+Cada <code>accordion</code> contém detalhes de um tipo específico.
+Exemplo: <code>Benefícios</code>, <code>Cartões de Pagamento</code>, <code>Convênios</code>, etc.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.itens" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">itens</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div.item &gt; button&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div.item &gt; button&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.itens" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Cada <code>accordion</code> possui um botão de detalhes, e um botão de titulo.
+O botão de titulo possui o nome da seção e, ao clicar, expande ou colapsa
+o conteúdo do <code>accordion</code>.
+Este seletor obtém esse botão.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">subsection</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div.br-table&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div.br-table&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Alguns accordions possuem subseções, com vários botões de detalhes.
+Por exemplo, a seção de 'Recebimento de Recursos' possui várias subseções,
+como 'Bolsa Família', 'Auxílio Emergencial', etc.
+Esse seletor obtém essas subseções.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection_title" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">subsection_title</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div.responsive &gt; strong&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div.responsive &gt; strong&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.DetailsLinksSelector.subsection_title" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Título da subseção.
+Exemplo: <code>Bolsa Família</code>, <code>Auxílio Emergencial</code>, etc.
+Esse seletor obtém o título da subseção.
+veja: <code>subsection</code> para mais detalhes.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector" class="doc doc-heading">
+            <code>desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector</code>
+
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Seletor para a consulta de detalhes.</p>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.loading_selector" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">loading_selector</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;div#spinner&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;div#spinner&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.loading_selector" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor do elemento que indica que a página está carregando.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.next_page" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">next_page</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;li#lista_next&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;li#lista_next&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.next_page" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor do elemento que permite navegar para a próxima página de resultados.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.results_per_time" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">results_per_time</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;select.form-control&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;select.form-control&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.results_per_time" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor do elemento que permite escolher a quantidade de resultados por página.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_headers" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">table_headers</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;thead th&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;thead th&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_headers" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor dos cabeçalhos da tabela.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_selector" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">table_selector</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;table#lista&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;table#lista&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.ConsultDetailsSelector.table_selector" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Seletor da tabela que contém os dados do resultado da busca.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="desafio_mosqti.core.elements_selectors.selector.TabularDetailsSelector" class="doc doc-heading">
+            <code>desafio_mosqti.core.elements_selectors.selector.TabularDetailsSelector</code>
+
+
+<a href="#desafio_mosqti.core.elements_selectors.selector.TabularDetailsSelector" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Seletor para detalhes tabulares.</p>
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.expand", "navigation.sections", "navigation.instant", "navigation.instant.prefetch", "navigation.tracking", "navigation.search.highlight", "navigation.search.suggest", "navigation.search.share"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

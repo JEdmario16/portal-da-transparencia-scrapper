@@ -64,3 +64,35 @@ Além disso, o projeto conta com um sistema de logs que permite acompanhar o and
 Todo o fluxo de raspagem pode é centralizado atraés da classe `PortalTransparencia`, que possui métodos para iniciar a raspagem, aplicar filtros e exportar os dados. Essa classe é responsável por orquestrar todo o processo de raspagem e garantir que os dados sejam coletados de forma eficiente e precisa.
 
 
+## 🚀 Rodando localmente
+A aplicação pode ser executada localmente tanto usando o Docker, quanto diretamente no Python:
+
+### Usando docker
+```bash
+docker compose build && docker compose up -d
+```
+
+Nota: é necessário ter o Docker e o Docker Compose instalados na máquina e a porta 7000 livre.
+
+### Sem docker
+Primeiramente, recomenda-se utilizar um ambiente virtual. Por motivos de facilidade, recomenda-se o uso do [Poetry](https://python-poetry.org/), mas pode-se usar o `venv` ou `virtualenv` também.
+
+```bash
+    poetry install
+    sh fastapi.sh
+```
+
+IMPORTANTE: O projeto utiliza o Playwright, que requer a instalação de alguns navegadores. Para isso, execute o seguinte comando:
+
+```bash
+    playwright install
+```
+
+### Configuração do Google Sheets
+Para utilizar a funcionalidade de exportação para o Google Sheets funcione, é necessário configurar as credenciais de acesso à API do Google Sheets, presentes no arquivo .env.
+O arquivo de credenciais deve ser baixado do Google Cloud Console, com as permissões de Google Sheets e Google Drive habilitadas. Após baixar o arquivo, renomeie-o para `credentials.json` e informe o caminho no arquivo `.env`
+
+
+## 📝 Documentação
+A documentação do projeto foi gerada utilizando o [MkDocs](https://www.mkdocs.org/) e pode ser acessada em [http://localhost:7000/docs](http://localhost:7000/docs). A documentação inclui informações sobre a estrutura do projeto, como utilizar a API, como executar o crawler e como contribuir para o projeto.
+

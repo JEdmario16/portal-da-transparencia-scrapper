@@ -3,17 +3,21 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import FastAPI, Query
+from fastapi.responses import JSONResponse as Response 
 from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
 
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
 from desafio_mosqti.core.filters.cnpj_search_filter import NaturezaJuridica
 from desafio_mosqti.core.loger import logger as default_logger
 from desafio_mosqti.core.portal_transparencia import PortalTransparencia
 from desafio_mosqti.server.services import (add_search_result_register,
-                                            upload_details_to_google_drie)
+                                            upload_details_to_google_drive)
 
 app = FastAPI()
 
+app.mount("/docs-mkdocs", StaticFiles(directory="site", html=True), name="docs-mkdocs")
+# app.mount("/", StaticFiles(directory="site", html=True), name="docs-mkdocs")
 
 def store_records(
     records: list[dict],
@@ -37,7 +41,7 @@ def store_records(
             r = r.dict()
         identifier = f"{r[mode]}_{r['nome']}"
         if extract_details:
-            detail_register_id = upload_details_to_google_drie(
+            detail_register_id = upload_details_to_google_drive(
                 data=r,
                 identifier=identifier,
                 mode=mode,
@@ -54,11 +58,11 @@ def store_records(
 
 
 @app.get("/busca_cpf")
-async def busca(
+async def busca_cpf(
     query: str = Query(str),
-    force_max_results: Optional[bool] = True,
     extract_details: Optional[bool] = False,
     search_result_limit: int = 10,
+    store_data_in_gdrive: Optional[bool] = False,
     # filtros
     servidor_publico: Optional[bool] = False,
     beneficiario_programa_social: Optional[bool] = None,
@@ -75,7 +79,7 @@ async def busca(
 
     ### Parâmetros:
     - **query** (`str`, obrigatório): CPF, Nome ou NIS a ser pesquisado.
-    - **force_max_results** (`bool`, opcional): Se `True`, força a busca por todos os resultados disponíveis. AVSISO: Coletar grandes quantidades de dados pode levar a bloqueios temporários. Padrão: `True`.
+    - **search_result_limit** (`int`): Número máximo de resultados a serem retornados. Caso informado, a busca irá retornar os 'n' primeiros resultados. AVISO: Caso o número informado seja maior que o número de resultados disponíveis em uma página, os resultados serão limitados à página atual, a menos que a paginação seja forçada. Padrão: `10`.
     - **extract_details** (`bool`, opcional): Se `True`, extrai detalhes adicionais dos resultados. Padrão: `False`.
     - **search_result_limit** (`int`): Número máximo de resultados a serem retornados. Padrão: `10`.
     - **servidor_publico** (`bool`, opcional): Filtra por servidor público. Padrão: `None`.
@@ -117,33 +121,56 @@ async def busca(
             result = await portal.search(
                 query,
                 mode="cpf",
-                force_max_results=force_max_results,
                 extract_details=extract_details,
                 search_result_limit=search_result_limit,
                 _filter=_filter,
             )
+            result = [
+                r.model_dump() if isinstance(r, BaseModel) else r
+            for r in result
+            ]
         except Exception as e:
             default_logger.error(f"Erro ao buscar CPF: {e}")
             default_logger.exception(e)
-            return {
-                "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde."
-            }, 500
+            return Response(
+                content={
+                    "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde.",
+                    "details": str(e)
+                },
+                media_type="application/json",
+                status_code=500,
+            )
 
-        # Adiciona os resultados ao banco de dados
-        store_records(
-            records=result,
-            query=query,
-            mode="cpf",
-            extract_details=extract_details,
+        if store_data_in_gdrive:
+            # Adiciona os resultados ao banco de dados
+            try:
+                store_records(
+                    records=result,
+                    query=query,
+                    mode="cpf",
+                    extract_details=extract_details,
+                )
+            except Exception as e:
+                default_logger.error(f"Erro ao adicionar registros ao banco de dados: {e}")
+                default_logger.exception(e)
+                return Response(
+                    content={
+                        "data": result,
+                        "warning": "Os dados foram obtidos, mas não foi possível armazená-los no banco de dados."
+                    },
+                    media_type="application/json",
+                    status_code=200,
+                )
+        return Response(
+            content={"data": result},
+            media_type="application/json",
+            status_code=200,
         )
-
-        return result
 
 
 @app.get("/busca_cnpj")
 async def busca_cnpj(
     query: str = Query(str),
-    force_max_results: Optional[bool] = True,
     extract_details: Optional[bool] = False,
     search_result_limit: int = 10,
     # filtros
@@ -162,9 +189,8 @@ async def busca_cnpj(
 
     ### Parâmetros:
     - **query** (`str`, obrigatório): CPF, Nome ou NIS a ser pesquisado.
-    - **force_max_results** (`bool`, opcional): Se `True`, força a busca por todos os resultados disponíveis. AVSISO: Coletar grandes quantidades de dados pode levar a bloqueios temporários. Padrão: `True`.
+    - **search_result_limit** (`int`): Número máximo de resultados a serem retornados. Caso informado, a busca irá retornar os 'n' primeiros resultados. AVISO: Caso o número informado seja maior que o número de resultados disponíveis em uma página, os resultados serão limitados à página atual, a menos que a paginação seja forçada. Padrão: `10`.
     - **extract_details** (`bool`, opcional): Se `True`, extrai detalhes adicionais dos resultados. Padrão: `False`.
-    - **search_result_limit** (`int`): Número máximo de resultados a serem retornados. Padrão: `10`.
     - **tipo_natureza_juridica** (`int`, opcional): Tipo de natureza jurídica da empresa. Padrão: `None`.
     - **uf_pessoa_juridica** (`str`, opcional): UF da pessoa jurídica da empresa no formato "XX". Ex: "SP", "RJ", "MG". Padrão: `None`.
     - **municipio** (`str`, opcional): Geocode do município da empresa, ex: "3304557" para o município do Rio de Janeiro. Veja: https://www.ibge.gov.br/explica/codigos-dos-municipios.php para mais detalhes. Padrão: `None`.
@@ -208,7 +234,6 @@ async def busca_cnpj(
             result = await portal.search(
                 query,
                 mode="cnpj",
-                force_max_results=force_max_results,
                 extract_details=extract_details,
                 search_result_limit=search_result_limit,
                 _filter=_filter,
@@ -216,16 +241,36 @@ async def busca_cnpj(
         except Exception as e:
             default_logger.error(f"Erro ao buscar CNPJ: {e}")
             default_logger.exception(e)
-            return {
-                "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde."
-            }, 500
+            return Response(
+                content={
+                    "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde."
+                },
+                media_type="application/json",
+                status_code=500,
+            )
 
         # Adiciona os resultados ao banco de dados
-        store_records(
-            records=result,
-            query=query,
-            mode="cnpj",
-            extract_details=extract_details,
-        )
+        try:
+            store_records(
+                records=result,
+                query=query,
+                mode="cnpj",
+                extract_details=extract_details,
+            )
+        except Exception as e:
+            default_logger.error(f"Erro ao adicionar registros ao banco de dados: {e}")
+            default_logger.exception(e)
+            return Response(
+                content={
+                    "data": result,
+                    "warning": "Os dados foram obtidos, mas não foi possível armazená-los no banco de dados."
+                },
+                media_type="application/json",
+                status_code=200,
+            )
 
-        return result
+        return Response(
+            content={"data": result},
+            media_type="application/json",
+            status_code=200,
+        )

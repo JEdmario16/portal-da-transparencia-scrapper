@@ -10,17 +10,28 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from gspread import Worksheet
 
+
+# copilot: ao inves de deixar as variaveis expotas, pegue elas do .env
+
+import os
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
+# Defina o caminho do arquivo .env
+
+
+
 # Constantes
 SCOPES = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive",
 ]
 
-SEARCH_RESULT_CPF_SHEET_NAME = "Buscas CPF"
-SEARCH_RESULT_CNPJ_SHEET_NAME = "Buscas CNPJ"
-DETAILS_SHEET_NAME = "Detalhes"
-CREDS_PATH = "desafio_mosqti/server/creds.json"
-GOOGLE_DRIVE_FOLDER_ID = "1EnLW2luuWHni9JHIsIFNvZ9rk-L31ren"
+SEARCH_RESULT_CPF_SHEET_NAME = os.getenv("SEARCH_RESULT_CPF_SHEET_NAME")
+SEARCH_RESULT_CNPJ_SHEET_NAME = os.getenv("SEARCH_RESULT_CNPJ_SHEET_NAME")
+CREDS_PATH = os.getenv("CREDS_PATH")
+GOOGLE_DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 
 # Autenticação global gspread
 creds = service_account.Credentials.from_service_account_file(CREDS_PATH, scopes=SCOPES)
@@ -114,7 +125,6 @@ def add_search_result_register(
     else:
         sheet.append_row(row)
 
-    print(f"Registro adicionado/atualizado: {row}")
     return row
 
 
@@ -155,6 +165,5 @@ def upload_details_to_google_drive(
     )
     file_id = file.get("id")
 
-    print(f"Arquivo enviado: {file_id}")
     os.remove(temp_file_path)
     return file_id

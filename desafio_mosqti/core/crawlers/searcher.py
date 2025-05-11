@@ -5,7 +5,7 @@ from typing import List, Literal
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
     ElementHandle, Locator, Page)
 
-from desafio_mosqti.core.elements_selectors.selector import Selector
+from desafio_mosqti.core.elements_selectors.selector import SearcherSelector
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
 from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
 from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
@@ -17,13 +17,43 @@ class Searcher(BaseCrawler):
     Crawler para buscas no Portal da Transparência (Pessoa Física e Jurídica).
 
     Esta classe realiza consultas públicas por CPF ou CNPJ, aplicando filtros opcionais,
-    e retornando os resultados estruturados como instâncias de CpfSearchResult ou CnpjSearchResult.
+    e retornando os resultados estruturados como instâncias de [CpfSearchResult][desafio_mosqti.core.schemas.search_result.CpfSearchResult] ou [CnpjSearchResult][desafio_mosqti.core.schemas.search_result.CnpjSearchResult].
+    O crawler é capaz de lidar com diferentes tipos de filtros, como natureza jurídica, município,
+
+    Também é possível realizar a paginação dos resultados, limitar a quantidade de resultados, verificar
+    a presença de captchas e auto retentar em caso de falhas.
 
     Recursos disponíveis:
+    ----------------
     - Geração da URL com base no tipo de consulta e filtros.
     - Paginação de resultados (opcional, até 200 itens).
     - Extração estruturada de dados a partir da lista de resultados.
     - Compatível com modos "cpf" e "cnpj".
+
+
+    Exemplo de uso:
+    ```python
+    from desafio_mosqti.core.crawlers.searcher import Searcher
+    from desafio_mosqti.core.filters import CNPJSearchFilter
+    from desafio_mosqti.core.schemas.search_result import CnpjSearchResult
+    import asyncio
+
+    async def main():
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            searcher = Searcher(page=page)
+            filter = CNPJSearchFilter(tipo_natureza_juridica=1)
+            result = await searcher.search(
+                query="12345678000195",
+                mode="cnpj",
+                _filter=filter,
+                force_max_results=True,
+                limit_results=10
+            )
+            print(result)
+    asyncio.run(main())
+    ```
     """
 
     BASE_URL = "https://portaldatransparencia.gov.br"
@@ -33,7 +63,7 @@ class Searcher(BaseCrawler):
         "cnpj": "pessoa-juridica",
     }
 
-    selector = Selector()
+    selector = SearcherSelector()
 
     async def search(
         self,
@@ -41,7 +71,6 @@ class Searcher(BaseCrawler):
         *,
         mode: Literal["cpf", "cnpj"] = "cpf",
         _filter: CNPJSearchFilter | CPFSearchFilter | None = None,
-        force_max_results: bool = False,
         raise_for_captcha: bool = True,
         limit_results: int | None = None,
         max_retries: int = 3,
@@ -54,7 +83,6 @@ class Searcher(BaseCrawler):
             query (str): Termo a ser buscado (CPF ou CNPJ).
             mode (Literal["cpf", "cnpj"]): Modo de busca (pessoa física ou jurídica).
             _filter (CNPJSearchFilter | CPFSearchFilter, optional): Filtro adicional de busca.
-            force_max_results (bool): Se True, percorre todas as páginas até 200 resultados. Defaults to False.
             raise_for_captcha (bool): Se True, levanta uma exceção se um captcha for detectado. Defaults to True.
             limit_results (int | None): Caso informado, limitará a lista de resultados de busca para os N primeiros itens.
                 Defaults to None.
@@ -62,6 +90,7 @@ class Searcher(BaseCrawler):
         Returns:
             List[CpfSearchResult | CnpjSearchResult]: Lista de resultados da busca.
         """
+
         url = self.build_query_url(query, mode=mode, _filter=_filter)
         try:
             await self.page.goto(url)
@@ -106,7 +135,7 @@ class Searcher(BaseCrawler):
         if results_count == 0:
             return []
 
-        if limit_results and not force_max_results:
+        if limit_results:
             results_count = min(results_count, limit_results)
 
         page_count = self.__calculate_page_count(results_count)
@@ -126,7 +155,7 @@ class Searcher(BaseCrawler):
                 extra={"url": url},
             )
             all_results.extend(result)
-        return all_results
+        return all_results[:limit_results] if limit_results else all_results
 
     async def paginate_results(
         self, page: Page, total_pages: int, jitter: bool = False, max_retries: int = 3
@@ -328,13 +357,15 @@ class Searcher(BaseCrawler):
             )
             he = await page.query_selector(self.selector.results_count_selector)
             if not he:
-                raise ValueError("Não foi possível encontrar o elemento de resultados")
+                raise RuntimeError("A página não pode ser carregada corretamente")
 
             results_count = await self.parse_results_count(he)
             if (
                 results_count == -1
             ):  # neste caso, o elemento foi encontrado, mas o texto é um placeholder
-                raise ValueError("Não foi possível encontrar o elemento de resultados")
+                raise RuntimeError(
+                    "A página não pode ser carregada corretamente. O elemento de contagem de resultados não possui texto válido."
+                )
 
     def __resolve_mode(self, mode: str) -> str:
         """

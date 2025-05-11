@@ -1,0 +1,19 @@
+# Desafio MOST QI
+Para este projeto, decidi criar uma aplicação para coletar os dados e forma completa, adicionadno algumas funcionalidades extras.
+Para que isso fosse possível, precisei utilizar diversas técnicas de desenvolvimento, como separação de responsabilidades, abstração, encapsulamento e polimorfismo. 
+Meu objetivo com isso foi, além de atender ao desafio, exibir também um pouco do meu conhecimento em desenvolvimento de software,
+o que acredito ser precioso durante a aavaliação do desafio.
+
+Abaixo destaco algumas das funcionalidades que foram implementadas:
+- Extração de dados de CPF e CNPJ
+- Extração de todos os tipos de detalhes, não se limitando aos benefícios
+- Métodos para escapar de possíveis Captchas e bloqueios
+- Logs de erros e informações
+- Programação assíncrona
+- Separação de responsabilidades
+- Documentação do código
+
+A parte II do desafio também foi implementada, utilizando o FastAPI como framework. O fato do FAST API usar um WSGI, torna a aplicação mais escalável em teoria(isso porque, mesmo com mecanismos para evitar captchas, invocar grandes quantidades de requisições seria necessário técnicas mais delicadas, como o uso de proxies, o que não foi implementado).
+
+Para fazer com que a aplicação seja menos suscetível a alterações no site, os seletores foram escolhidos de forma bem cuidadosa, evitando o uso de seletores muito genéricos. Além disso, diversas vezes optei por trabalhar com a URL diretamente, ao invés de interagir de fato com o DOM. Como exemplo, a filtragem de resultados é feita através de parâmetros na URL, ao invés de de fato interagir com o DOM.
+

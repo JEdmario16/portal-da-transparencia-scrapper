@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class CpfSearchResult(BaseModel):
     """
-    Esquema para o resultado da busca de CPF.
+    Esquema para representar o resultado da busca de CPF, retornado por desafio_mosqti.core.crawlers.searcher.Searcher
     """
 
     nome: str

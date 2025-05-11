@@ -2,26 +2,24 @@ site_name: Scrapper Portal da Transparência Docs
 plugins: 
   - search
   - glightbox
-  - mkdocs-material-insight:
+  - autorefs
   - mkdocstrings:
       handlers:
         python:
           options:
             show_root_heading: true
-            show_root_full_name: true
-            show_root_full_name_link: true
-            show_root_heading_link: true
-            show_root_heading_icon: true
-            show_root_heading_icon_link: true
-            show_root_heading_icon_link_text: true
-            show_root_heading_icon_link_text_color: true
-            show_root_heading_icon_link_text_color_value: '#000000'
-            show_root_heading_icon_link_text_color_value_dark: '#FFFFFF'
-            show_root_heading_icon_link_text_color_value_light: '#000000'
-            show_root_heading_icon_link_text_color_value_dark_light: '#FFFFFF'
-        setup_commands:
-          - import sys; sys.path.append('.')
-
+            show_source: false
+            show_root_full_name: false
+            show_signature: true
+            show_signature_annotations: true
+            show_source_link: true
+            show_inheritance: true
+            show_inheritance_graph: true
+            show_inheritance_diagram: true
+            show_inheritance_diagram_depth: 2
+            show_inheritance_diagram_options:
+              graphviz_dot: dot
+    
 markdown_extensions: 
 
   - attr_list
@@ -32,6 +30,7 @@ markdown_extensions:
   - tables
   - pymdownx.highlight
   - pymdownx.superfences
+
   - toc:
       permalink: true
       title: Table of Contents
@@ -63,7 +62,12 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting Started:
-      - Overview: getting-started/overview.md
-      - Installation: getting-started/installation.md
-      - Configuration: getting-started/configuration.md
+  - Crawler:
+      - Reference:
+          - Portal da Transparência: crawler/portal_transparencia.md
+          - Searcher: crawler/searcher.md
+          - Details: crawler/details.md
+          - Schemas: crawler/schemas.md
+          - Filters: crawler/filters.md
+          - Elements Selectors: crawler/elements_selectors.md
+  - API: http://localhost:7000/docs

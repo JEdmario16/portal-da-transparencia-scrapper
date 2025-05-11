@@ -32,6 +32,105 @@ class PortalTransparencia:
     Esta classe integra os componentes de busca (Searcher), extração de links de detalhes (DetailsLinks),
     e coleta dos dados detalhados (TabularDetails, ConsultDetails). Permite a coleta de dados em lote
     com randomização de contexto (user-agent, timezone, etc) para evitar bloqueios e fingerprinting.
+
+    Ao realizar uma busca, `Searcher` retorna uma lista de resultados, seguindo os filtros e parâmetros
+    especificados. Se `extract_details` for definido como `True`, então o Crawler `DetailsLinks` é utilizado
+    em cada um dos resultados de busca para extrair os links de detalhes. Finalmente, os detalhes são
+    extraídos utilizando o Crawler apropriado (TabularDetails ou ConsultDetails) para cada link.
+    O resultado final é uma lista de dicionários, onde cada dicionário contém os dados do resultado da busca
+    e os detalhes extraídos.
+
+    O 'Crawler appropriado' é determinado baseado na URL do detalhe. O mapeamento entre URL e Crawler é
+    definido no dicionário `DETAIL_PAGE_MAP`. Cada URL é mapeada para uma classe de detalhe correspondente.
+    Embora o mapeamento seja estático, ele é mais eficiente do que utilizar força bruta para descobrir
+    qual classe de detalhe utilizar
+    
+    Decidimos utilizar o padrão de projeto `Orquestrador` para facilitar a integração entre os diferentes componentes
+
+    Exemplos de uso:
+
+    Exemplo: Realizando uma busca por CNPJ, sem extração de detalhes.
+        ```python
+        from desafio_mosqti.core.portal_transparencia import PortalTransparencia
+        from desafio_mosqti.core.filters import CNPJSearchFilter
+        from desafio_mosqti.core.schemas.search_result import CnpjSearchResult
+        async def main():
+            async with PortalTransparencia(headless=False) as portal:
+                cnpj_result = await portal.search(
+                    query="12345678000195",
+                    mode="cnpj",
+                    force_max_results=True,
+                    extract_details=False,
+                    _filter=CNPJSearchFilter(
+                        servidor_publico=True,
+                        beneficiario_programa_social=True,
+                        sancao_vigente=True,
+                    ),
+                )
+                print(cnpj_result)
+        ```
+
+        A saída será algo do tipo:
+
+        ```json
+        [
+            {
+                "nome": "Nome do CNPJ",
+                "cnpj": "12345678000195",
+                "url": "https://portaldatransparencia.gov.br/consulta/12345678000195",
+                "links": [],
+                "details": []
+            },
+            ...]
+        ```
+
+    Exemplo: Realizando uma busca por CPF e extraindo detalhes.
+        ```python
+        from desafio_mosqti.core.portal_transparencia import PortalTransparencia
+        from desafio_mosqti.core.filters import CPFSearchFilter
+        from desafio_mosqti.core.schemas.search_result import CpfSearchResult
+
+
+        async def main():
+            async with PortalTransparencia(headless=False) as portal:
+                cpf_result = await portal.search(
+                    query="12345678901",
+                    mode="cpf",
+                    force_max_results=True,
+                    extract_details=True,
+                    _filter=CPFSearchFilter(
+                        servidor_publico=True,
+                        beneficiario_programa_social=True,
+                        sancao_vigente=True,
+                    ),
+                )
+                print(cpf_result)
+        ```
+        A saída será algo do tipo:
+        ```json
+        [
+            {
+                "nome": "Nome do CPF",
+                "cpf": "12345678901",
+                "url": "https://portaldatransparencia.gov.br/busca/pessoa-fisica/839213-nome-da-pessoa",
+                "beneficio_tipo": "Servidor Público, Favorecido de recurso público",
+                "links": [],
+                "details": {
+                    "accordion-serivdor_0": {
+                        "dados_tabelados": {
+                            "Nome": "Nome do CPF",
+                            "CPF": "12345678901",
+                            "Cargo": "Cargo do CPF",
+                        },
+                        "dados_detalhados": {
+                            "evidence": "iVAANSUhEUgAAB1YAAA ...", # imagem base64,
+                            ...
+                    }
+                }
+            },
+            ...]
+        ```
+        NOTE: Veja as classes `ConsultDetails` e `TabularDetails` para mais detalhes sobre os dados extraídos.
     """
 
     # Mapeamento estático de caminhos de URL para a classe de detalhamento correspondente.
@@ -240,7 +339,6 @@ class PortalTransparencia:
         query: str,
         *,
         mode: Literal["cpf", "cnpj"] = "cpf",
-        force_max_results: bool = False,
         _filter: Optional[Union[CPFSearchFilter, CNPJSearchFilter]] = None,
         extract_details: bool = False,
         search_result_limit: int | None = None,
@@ -253,7 +351,6 @@ class PortalTransparencia:
         Args:
             query (str): CPF ou CNPJ a ser pesquisado.
             mode (Literal["cpf", "cnpj"], optional): Modo de pesquisa. Defaults to "cpf".
-            force_max_results (bool, optional): Se True, limita o número de resultados por página para o máximo permitido. Defaults to True.
             _filter (Optional[Union[CPFSearchFilter, CNPJSearchFilter]], optional): Filtro a ser aplicado. Defaults to None.
             extract_details (bool, optional): Se True, extrai os detalhes dos resultados. Defaults to False.
             search_result_limit (int | None, optional): Limite de resultados a serem retornados. Defaults to None.
@@ -266,7 +363,6 @@ class PortalTransparencia:
             search_results = await searcher.search(
                 query,
                 mode=mode,
-                force_max_results=force_max_results,
                 _filter=_filter,
                 limit_results=search_result_limit,
             )
@@ -288,13 +384,13 @@ class PortalTransparencia:
             search_results_links = await self.__get_details_links(search_results)
             for result in search_results_links:
                 self.logger.debug(
-                    f"Fetching details for {result.get("nome")}",
-                    extra={"url": result.get("url")},
+                    f"Fetching details for {result.nome}",
+                    extra={"url": result.url},
                 )
 
                 details, err_count = (
                     await self.__extract_all_details_from_search_result_links(
-                        result["links"],
+                        result.details_links
                     )
                 )
                 self.logger.debug(
@@ -304,9 +400,7 @@ class PortalTransparencia:
                         "errors": err_count,
                     },
                 )
-                result["details"] = details
-                result["details_links"] = result.pop("links", None)
-
+                result.details = details
                 await asyncio.sleep(random.uniform(0.5, 2))
             return search_results_links
         return search_results
@@ -364,7 +458,7 @@ class PortalTransparencia:
         search_result: list[Union[CpfSearchResult, CnpjSearchResult]],
         *,
         page: Page | None = None,
-    ) -> list:
+    ) -> list[Union[CpfSearchResult, CnpjSearchResult]]:
         """
         Extrai os links de detalhes dos resultados da pesquisa.
 
@@ -372,7 +466,7 @@ class PortalTransparencia:
             search_result (Union[CpfSearchResult, CnpjSearchResult]): Resultados da pesquisa.
 
         Returns:
-            list[DetailsLinks]: Lista de links de detalhes.
+            list[Union[CpfSearchResult, CnpjSearchResult]]: Lista de links de detalhes.
         """
         page = page or await self.__new_page()
         urls = []
@@ -390,13 +484,8 @@ class PortalTransparencia:
                     f"Details links fetched successfully",
                     extra={"count": len(links), "keys": list(links.keys())},
                 )
-                urls.append(
-                    {
-                        **sr.model_dump(),
-                        "links": links,
-                    }
-                )
-        return urls
+                sr.details_links = links
+        return search_result
 
     async def __discover_detail_page(
         self,
@@ -432,28 +521,3 @@ class PortalTransparencia:
             extra={"url": url},
         )
         return None
-
-
-async def main():
-
-    async with PortalTransparencia(headless=False) as portal:
-        # Exemplo de busca por CPF
-        cpf_result = await portal.search(
-            query="",
-            mode="cpf",
-            max_results=False,
-            extract_details=True,
-            _filter=CPFSearchFilter(
-                servidor_publico=True,
-                beneficiario_programa_social=True,
-                sancao_vigente=True,
-            ),
-        )
-        with open("cpf_result.json", "w") as f:
-            json.dump(cpf_result, f, indent=4)
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
