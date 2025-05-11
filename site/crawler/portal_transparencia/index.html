@@ -241,7 +241,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="http://localhost:7000/docs" class="md-tabs__link">
+      <a href="https://desafio-mosqti-production.up.railway.app/docs" class="md-tabs__link">
         
   
   
@@ -696,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="http://localhost:7000/docs" class="md-nav__link">
+      <a href="https://desafio-mosqti-production.up.railway.app/docs" class="md-nav__link">
         
   
   
@@ -1100,7 +1100,7 @@ NOTE: Veja as classes <code>ConsultDetails</code> e <code>TabularDetails</code> 
 
 
 <h3 id="desafio_mosqti.core.portal_transparencia.PortalTransparencia.__get_details_links" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">__get_details_links</span><span class="p">(</span><span class="n">search_result</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CpfSearchResult</span><span class="p">,</span> <span class="n">CnpjSearchResult</span><span class="p">]],</span> <span class="o">*</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span></code>
+            <code class="highlight language-python"><span class="n">__get_details_links</span><span class="p">(</span><span class="n">search_result</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CpfSearchResult</span><span class="p">,</span> <span class="n">CnpjSearchResult</span><span class="p">]],</span> <span class="o">*</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CpfSearchResult</span><span class="p">,</span> <span class="n">CnpjSearchResult</span><span class="p">]]</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -1156,11 +1156,11 @@ NOTE: Veja as classes <code>ConsultDetails</code> e <code>TabularDetails</code> 
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="list">list</span></code>
+                  <code><span title="list">list</span>[<span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="desafio_mosqti.core.schemas.search_result.CpfSearchResult" href="../schemas/#desafio_mosqti.core.schemas.search_result.CpfSearchResult">CpfSearchResult</a>, <a class="autorefs autorefs-internal" title="desafio_mosqti.core.schemas.search_result.CnpjSearchResult" href="../schemas/#desafio_mosqti.core.schemas.search_result.CnpjSearchResult">CnpjSearchResult</a>]]</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>list[DetailsLinks]: Lista de links de detalhes.</p>
+                <p>list[Union[CpfSearchResult, CnpjSearchResult]]: Lista de links de detalhes.</p>
               </div>
             </td>
           </tr>
@@ -1341,7 +1341,7 @@ NOTE: Veja as classes <code>ConsultDetails</code> e <code>TabularDetails</code> 
 
 
 <h3 id="desafio_mosqti.core.portal_transparencia.PortalTransparencia.search" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;cpf&#39;</span><span class="p">,</span> <span class="s1">&#39;cnpj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;cpf&#39;</span><span class="p">,</span> <span class="n">force_max_results</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CPFSearchFilter</span><span class="p">,</span> <span class="n">CNPJSearchFilter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extract_details</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">search_result_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;cpf&#39;</span><span class="p">,</span> <span class="s1">&#39;cnpj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;cpf&#39;</span><span class="p">,</span> <span class="n">_filter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">CPFSearchFilter</span><span class="p">,</span> <span class="n">CNPJSearchFilter</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">extract_details</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">search_result_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-async"><code>async</code></small>
@@ -1397,22 +1397,6 @@ NOTE: Veja as classes <code>ConsultDetails</code> e <code>TabularDetails</code> 
             </td>
             <td>
                   <code>&#39;cpf&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>force_max_results</code>
-            </td>
-            <td>
-                  <code><span title="bool">bool</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Se True, limita o número de resultados por página para o máximo permitido. Defaults to True.</p>
-              </div>
-            </td>
-            <td>
-                  <code>False</code>
             </td>
           </tr>
           <tr class="doc-section-item">

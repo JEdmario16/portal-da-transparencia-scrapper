@@ -237,7 +237,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="http://localhost:7000/docs" class="md-tabs__link">
+      <a href="https://desafio-mosqti-production.up.railway.app/docs" class="md-tabs__link">
         
   
   
@@ -388,9 +388,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#usando-a-api" class="md-nav__link">
+  <a href="#configuracao-do-google-sheets" class="md-nav__link">
     <span class="md-ellipsis">
-      Usando a API
+      Configuração do Google Sheets
     </span>
   </a>
   
@@ -398,6 +398,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      📝 Documentação
+    </span>
+  </a>
   
 </li>
       
@@ -659,7 +668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="http://localhost:7000/docs" class="md-nav__link">
+      <a href="https://desafio-mosqti-production.up.railway.app/docs" class="md-nav__link">
         
   
   
@@ -749,9 +758,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#usando-a-api" class="md-nav__link">
+  <a href="#configuracao-do-google-sheets" class="md-nav__link">
     <span class="md-ellipsis">
-      Usando a API
+      Configuração do Google Sheets
     </span>
   </a>
   
@@ -759,6 +768,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      📝 Documentação
+    </span>
+  </a>
   
 </li>
       
@@ -848,9 +866,14 @@ Todo o processo de raspagem de dados pode ser separado em quatro telas principai
 <div class="highlight"><pre><span></span><code><span class="w">    </span>poetry<span class="w"> </span>install
 <span class="w">    </span>sh<span class="w"> </span>fastapi.sh
 </code></pre></div>
-<h3 id="usando-a-api">Usando a API<a class="headerlink" href="#usando-a-api" title="Permanent link">&para;</a></h3>
-<p>Para utilizar o crawler independentemente da API, veja a documentação em <a href="crawler/index.md">docs/crawler</a>.</p>
-<p>Além disso, a documentação da API Swagger pode ser acessada em <a href="http://localhost:7000/docs">http://localhost:7000/docs</a> e a documentação OpenAPI em <a href="http://localhost:7000/openapi.json">http://localhost:7000/openapi.json</a>.</p>
+<p>IMPORTANTE: O projeto utiliza o Playwright, que requer a instalação de alguns navegadores. Para isso, execute o seguinte comando:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>playwright<span class="w"> </span>install
+</code></pre></div>
+<h3 id="configuracao-do-google-sheets">Configuração do Google Sheets<a class="headerlink" href="#configuracao-do-google-sheets" title="Permanent link">&para;</a></h3>
+<p>Para utilizar a funcionalidade de exportação para o Google Sheets funcione, é necessário configurar as credenciais de acesso à API do Google Sheets, presentes no arquivo .env.
+O arquivo de credenciais deve ser baixado do Google Cloud Console, com as permissões de Google Sheets e Google Drive habilitadas. Após baixar o arquivo, renomeie-o para <code>credentials.json</code> e informe o caminho no arquivo <code>.env</code></p>
+<h2 id="documentacao">📝 Documentação<a class="headerlink" href="#documentacao" title="Permanent link">&para;</a></h2>
+<p>A documentação do projeto foi gerada utilizando o <a href="https://www.mkdocs.org/">MkDocs</a> e pode ser acessada em <a href="http://localhost:7000/docs">http://localhost:7000/docs</a>. A documentação inclui informações sobre a estrutura do projeto, como utilizar a API, como executar o crawler e como contribuir para o projeto.</p>
 
 
 
