@@ -3,28 +3,44 @@ from enum import Enum
 from desafio_mosqti.core.filters import base_filter
 
 
-class NaturezaJuridica(Enum):
+class NaturezaJuridica(str, Enum):
     """
     Enumeração para os tipos de natureza jurídica.
+
+    Os valores são os códigos utilizados na API do Portal da Transparência.
+
+    - 0: Todos
+    - 1: Administração Pública
+    - 2: Entidades Empresariais
+    - 3: Entidades Sem Fins Lucrativos
+    - 4: Organização Internacional
+
     """
 
-    TODOS = 0
-    ADMINISTRACAO_PUBLICA = 1
-    ENTIDADES_EMPRESARIAIS = 2
-    ENTIDADES_SEM_FINS_LUCRO = 3
-    ORGANIZACAO_INTERNACIONAL = 4
+    TODOS = "0"
+    ADMINISTRACAO_PUBLICA = "1"
+    ENTIDADES_EMPRESARIAIS = "2"
+    ENTIDADES_SEM_FINS_LUCRO = "3"
+    ORGANIZACAO_INTERNACIONAL = "4"
 
 
-class GrupoObjeto(Enum):
+class GrupoObjeto(str, Enum):
     """
     Enumeração para os grupos de objeto.
+
+    Os valores são os códigos utilizados na API do Portal da Transparência.
+    - 1: Obras
+    - 2: Serviços
+    - 3: Bens Patrimoniais
+    - 4: Materiais
+    - 99: Outros
     """
 
-    OBRAS = 1
-    SERVIÇOS = 2
-    BENS_PATRIMONIAIS = 3
-    MATERIAIS = 4
-    OUTROS = 99
+    OBRAS = "1"
+    SERVIÇOS = "2"
+    BENS_PATRIMONIAIS = "3"
+    MATERIAIS = "4"
+    OUTROS = "99"
 
 
 class CNPJSearchFilter(base_filter.BaseFilter):

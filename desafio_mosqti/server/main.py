@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse as Response 
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 
 from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.filters.cnpj_search_filter import NaturezaJuridica
+from desafio_mosqti.core.filters.cnpj_search_filter import NaturezaJuridica, GrupoObjeto
 from desafio_mosqti.core.loger import logger as default_logger
 from desafio_mosqti.core.portal_transparencia import PortalTransparencia
 from desafio_mosqti.server.services import (add_search_result_register,
@@ -17,7 +17,6 @@ from desafio_mosqti.server.services import (add_search_result_register,
 app = FastAPI()
 
 app.mount("/docs-mkdocs", StaticFiles(directory="site", html=True), name="docs-mkdocs")
-# app.mount("/", StaticFiles(directory="site", html=True), name="docs-mkdocs")
 
 def store_records(
     records: list[dict],
@@ -57,9 +56,85 @@ def store_records(
         )
 
 
+def build_filters(
+        mode: str,
+        **kwargs
+):
+    if mode == "cpf":
+        return CPFSearchFilter.model_validate(kwargs)
+    elif mode == "cnpj":
+        return CNPJSearchFilter.model_validate(kwargs)
+    raise ValueError(f"Modo inválido: {mode}. Deve ser 'cpf' ou 'cnpj'.")
+
+
+async def generic_search(
+        query: str,
+        mode: str,
+        extract_details: bool = False,
+        search_result_limit: int = 10,
+        store_data_in_gdrive: Optional[bool] = False,
+        **kwargs
+):
+    async with PortalTransparencia(headless=True) as portal:
+        if query == "''" or query == '""' or not query:
+            query = ""
+
+        _filter = build_filters(mode, **kwargs)
+        try:
+            result = await portal.search(
+                query,
+                mode=mode,
+                extract_details=extract_details,
+                search_result_limit=search_result_limit,
+                _filter=_filter,
+            )
+            result = [
+                r.model_dump() if isinstance(r, BaseModel) else r
+                for r in result
+            ]
+        except Exception as e:
+            default_logger.error(f"Erro ao buscar {mode}: {e}")
+            default_logger.exception(e)
+            return Response(
+                content={
+                    "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde.",
+                    "details": str(e)
+                },
+                media_type="application/json",
+                status_code=500,
+            )
+
+        if store_data_in_gdrive:
+            # Adiciona os resultados ao banco de dados
+            try:
+                store_records(
+                    records=result,
+                    query=query,
+                    mode=mode,
+                    extract_details=extract_details,
+                )
+            except Exception as e:
+                default_logger.error(f"Erro ao adicionar registros ao banco de dados: {e}")
+                default_logger.exception(e)
+                return Response(
+                    content={
+                        "data": result,
+                        "warning": f"Os dados foram obtidos, mas não foi possível armazená-los no banco de dados. {str(e)}"
+                    },
+                    media_type="application/json",
+                    status_code=200,
+                )
+
+        return Response(
+            content={"data": result},
+            media_type="application/json",
+            status_code=200,
+        )
+
+
 @app.get("/busca_cpf")
 async def busca_cpf(
-    query: str = Query(str),
+    query: str = "",
     extract_details: Optional[bool] = False,
     search_result_limit: int = 10,
     store_data_in_gdrive: Optional[bool] = False,
@@ -101,80 +176,34 @@ async def busca_cpf(
     ```
     """
 
-    async with PortalTransparencia(headless=True) as portal:
+    return await generic_search(
+        query=query,
+        mode="cpf",
+        extract_details=extract_details,
+        search_result_limit=search_result_limit,
+        store_data_in_gdrive=store_data_in_gdrive,
+        servidor_publico=servidor_publico,
+        beneficiario_programa_social=beneficiario_programa_social,
+        portador_cpgf=portador_cpgf,
+        portador_cpdc=portador_cpdc,
+        sancao_vigente=sancao_vigente,
+        ocupante_imovel_funcional=ocupante_imovel_funcional,
+        possui_contrato=possui_contrato,
+        favorecido_recurso=favorecido_recurso,
+        emitente_nfe=emitente_nfe,
+    )
 
-        _filter = CPFSearchFilter(
-            servidor_publico=servidor_publico,
-            beneficiario_programa_social=beneficiario_programa_social,
-            portador_cpgf=portador_cpgf,
-            portador_cpdc=portador_cpdc,
-            sancao_vigente=sancao_vigente,
-            ocupante_imovel_funcional=ocupante_imovel_funcional,
-            possui_contrato=possui_contrato,
-            favorecido_recurso=favorecido_recurso,
-            emitente_nfe=emitente_nfe,
-        )
-        if query == "''" or query == '""':
-            query = ""
 
-        try:
-            result = await portal.search(
-                query,
-                mode="cpf",
-                extract_details=extract_details,
-                search_result_limit=search_result_limit,
-                _filter=_filter,
-            )
-            result = [
-                r.model_dump() if isinstance(r, BaseModel) else r
-            for r in result
-            ]
-        except Exception as e:
-            default_logger.error(f"Erro ao buscar CPF: {e}")
-            default_logger.exception(e)
-            return Response(
-                content={
-                    "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde.",
-                    "details": str(e)
-                },
-                media_type="application/json",
-                status_code=500,
-            )
-
-        if store_data_in_gdrive:
-            # Adiciona os resultados ao banco de dados
-            try:
-                store_records(
-                    records=result,
-                    query=query,
-                    mode="cpf",
-                    extract_details=extract_details,
-                )
-            except Exception as e:
-                default_logger.error(f"Erro ao adicionar registros ao banco de dados: {e}")
-                default_logger.exception(e)
-                return Response(
-                    content={
-                        "data": result,
-                        "warning": f"Os dados foram obtidos, mas não foi possível armazená-los no banco de dados. {str(e)}"
-                    },
-                    media_type="application/json",
-                    status_code=200,
-                )
-        return Response(
-            content={"data": result},
-            media_type="application/json",
-            status_code=200,
-        )
 
 
 @app.get("/busca_cnpj")
 async def busca_cnpj(
-    query: str = Query(str),
+    query: str = "",
     extract_details: Optional[bool] = False,
     search_result_limit: int = 10,
+    store_data_in_gdrive: Optional[bool] = False,
     # filtros
-    tipo_natureza_juridica: Optional[int] = None,
+    tipo_natureza_juridica: Optional[NaturezaJuridica] = None,
     uf_pessoa_juridica: Optional[str] = None,
     municipio: Optional[str] = None,
     valor_gastos_diretos_de: Optional[float] = None,
@@ -183,6 +212,7 @@ async def busca_cnpj(
     valor_transferencia_ate: Optional[float] = None,
     sancao_vigente: Optional[bool] = None,
     emitente_nfe: Optional[bool] = None,
+    grupo_objeto: Optional[GrupoObjeto] = None,
 ):
     """
     Busca informações no Portal da Transparência com base em CPF ou CNPJ informado.
@@ -191,7 +221,7 @@ async def busca_cnpj(
     - **query** (`str`, obrigatório): CPF, Nome ou NIS a ser pesquisado.
     - **search_result_limit** (`int`): Número máximo de resultados a serem retornados. Caso informado, a busca irá retornar os 'n' primeiros resultados. AVISO: Caso o número informado seja maior que o número de resultados disponíveis em uma página, os resultados serão limitados à página atual, a menos que a paginação seja forçada. Padrão: `10`.
     - **extract_details** (`bool`, opcional): Se `True`, extrai detalhes adicionais dos resultados. Padrão: `False`.
-    - **tipo_natureza_juridica** (`int`, opcional): Tipo de natureza jurídica da empresa. Padrão: `None`.
+    - **tipo_natureza_juridica** (`Optional[NaturezaJuridica]`, opcional): Tipo de natureza jurídica da empresa. Padrão: `None`.
     - **uf_pessoa_juridica** (`str`, opcional): UF da pessoa jurídica da empresa no formato "XX". Ex: "SP", "RJ", "MG". Padrão: `None`.
     - **municipio** (`str`, opcional): Geocode do município da empresa, ex: "3304557" para o município do Rio de Janeiro. Veja: https://www.ibge.gov.br/explica/codigos-dos-municipios.php para mais detalhes. Padrão: `None`.
     - **valor_gastos_diretos_de** (`float`, opcional): Valor mínimo dos gastos diretos. Padrão: `None`.
@@ -210,67 +240,20 @@ async def busca_cnpj(
     ```
     """
 
-    async with PortalTransparencia(headless=True) as portal:
-
-        _filter = CNPJSearchFilter(
-            tipo_natureza_juridica=(
-                tipo_natureza_juridica
-                if tipo_natureza_juridica
-                else NaturezaJuridica.TODOS
-            ),
-            uf_pessoa_juridica=uf_pessoa_juridica,
-            municipio=municipio,
-            valor_gastos_diretos_de=valor_gastos_diretos_de,
-            valor_gastos_diretos_ate=valor_gastos_diretos_ate,
-            valor_transferencia_de=valor_transferencia_de,
-            valor_transferencia_ate=valor_transferencia_ate,
-            sancao_vigente=sancao_vigente,
-            emitente_nfe=emitente_nfe,
-        )
-        if query == "''" or query == '""':
-            query = ""
-
-        try:
-            result = await portal.search(
-                query,
-                mode="cnpj",
-                extract_details=extract_details,
-                search_result_limit=search_result_limit,
-                _filter=_filter,
-            )
-        except Exception as e:
-            default_logger.error(f"Erro ao buscar CNPJ: {e}")
-            default_logger.exception(e)
-            return Response(
-                content={
-                    "error": "Não foi possível obter os resultados da busca devido a um erro interno. Tente novamente mais tarde."
-                },
-                media_type="application/json",
-                status_code=500,
-            )
-
-        # Adiciona os resultados ao banco de dados
-        try:
-            store_records(
-                records=result,
-                query=query,
-                mode="cnpj",
-                extract_details=extract_details,
-            )
-        except Exception as e:
-            default_logger.error(f"Erro ao adicionar registros ao banco de dados: {e}")
-            default_logger.exception(e)
-            return Response(
-                content={
-                    "data": result,
-                    "warning": "Os dados foram obtidos, mas não foi possível armazená-los no banco de dados."
-                },
-                media_type="application/json",
-                status_code=200,
-            )
-
-        return Response(
-            content={"data": result},
-            media_type="application/json",
-            status_code=200,
-        )
+    return await generic_search(
+        query=query,
+        mode="cnpj",
+        extract_details=extract_details,
+        search_result_limit=search_result_limit,
+        store_data_in_gdrive=store_data_in_gdrive,
+        tipo_natureza_juridica=tipo_natureza_juridica if tipo_natureza_juridica else NaturezaJuridica.TODOS,
+        uf_pessoa_juridica=uf_pessoa_juridica,
+        municipio=municipio,
+        valor_gastos_diretos_de=valor_gastos_diretos_de,
+        valor_gastos_diretos_ate=valor_gastos_diretos_ate,
+        valor_transferencia_de=valor_transferencia_de,
+        valor_transferencia_ate=valor_transferencia_ate,
+        sancao_vigente=sancao_vigente,
+        emitente_nfe=emitente_nfe,
+        grupo_objeto=grupo_objeto
+    )

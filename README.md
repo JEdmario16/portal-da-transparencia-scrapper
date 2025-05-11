@@ -17,6 +17,19 @@ A parte II do desafio também foi implementada, utilizando o FastAPI como framew
 
 Para fazer com que a aplicação seja menos suscetível a alterações no site, os seletores foram escolhidos de forma bem cuidadosa, evitando o uso de seletores muito genéricos. Além disso, diversas vezes optei por trabalhar com a URL diretamente, ao invés de interagir de fato com o DOM. Como exemplo, a filtragem de resultados é feita através de parâmetros na URL, ao invés de de fato interagir com o DOM.
 
+# Exemplos de requisições
+
+### Requisição para buscar CPF
+```bash
+curl -X 'GET' \
+  'https://desafio-mosqti-production.up.railway.app/busca_cpf?query=123456&extract_details=false&search_result_limit=11&store_data_in_gdrive=true&servidor_publico=true&beneficiario_programa_social=true&favorecido_recurso=true' \
+  -H 'accept: application/json'
+  ```
+
+### Requisição para buscar CNPJ
+```bash
+
+
 # Acessos
 [URL da aplicação](https://desafio-mosqti-production.up.railway.app/docs-mkdocs)
 
