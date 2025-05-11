@@ -31,10 +31,17 @@ SCOPES = [
 SEARCH_RESULT_CPF_SHEET_NAME = os.getenv("SEARCH_RESULT_CPF_SHEET_NAME")
 SEARCH_RESULT_CNPJ_SHEET_NAME = os.getenv("SEARCH_RESULT_CNPJ_SHEET_NAME")
 CREDS_PATH = os.getenv("CREDS_PATH")
-GOOGLE_DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
+GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS")
+
+try:
+    creds_json = json.loads(GOOGLE_CREDENTIALS)
+except json.JSONDecodeError:
+    raise ValueError("Erro ao decodificar as credenciais do Google. Verifique o formato JSON.")
 
 # Autenticação global gspread
-creds = service_account.Credentials.from_service_account_file(CREDS_PATH, scopes=SCOPES)
+creds = service_account.Credentials.from_service_account_info(
+    creds_json, scopes=SCOPES
+)
 client = gspread.authorize(creds)
 
 
@@ -108,7 +115,6 @@ def add_search_result_register(
                 data.get("url", ""),
             ]
         )
-    else:
         row.extend(
             [
                 data.get("nome", ""),
