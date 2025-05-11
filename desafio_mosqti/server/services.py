@@ -1,6 +1,6 @@
 import datetime
 import json
-import os
+import os, sys
 import tempfile
 from typing import Literal, Optional
 
@@ -30,13 +30,21 @@ SCOPES = [
 
 SEARCH_RESULT_CPF_SHEET_NAME = os.getenv("SEARCH_RESULT_CPF_SHEET_NAME")
 SEARCH_RESULT_CNPJ_SHEET_NAME = os.getenv("SEARCH_RESULT_CNPJ_SHEET_NAME")
-CREDS_PATH = os.getenv("CREDS_PATH")
+GOOGLE_DRIVE_FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS")
+
+INTERNAL_CREDENTIALS_PATH = os.path.join(
+    os.path.dirname(__file__), "credentials.json"
+)
 
 try:
     creds_json = json.loads(GOOGLE_CREDENTIALS)
 except json.JSONDecodeError:
     raise ValueError("Erro ao decodificar as credenciais do Google. Verifique o formato JSON.")
+
+if not os.path.exists(INTERNAL_CREDENTIALS_PATH):
+    with open(INTERNAL_CREDENTIALS_PATH, "w") as f:
+        json.dump(creds_json, f, indent=4)
 
 # Autenticação global gspread
 creds = service_account.Credentials.from_service_account_info(
@@ -50,7 +58,7 @@ def authenticate_google_drive():
     Autentica e retorna credenciais para uso com a API do Google Drive.
     """
     return service_account.Credentials.from_service_account_file(
-        CREDS_PATH, scopes=SCOPES
+        INTERNAL_CREDENTIALS_PATH, scopes=SCOPES
     )
 
 
@@ -100,7 +108,7 @@ def add_search_result_register(
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     row = [
         identifier,
-        query,
+        query if query else "<empty_string>",
         now,  # atualizado em
         created_at if created_at else now,
         detail_url,
@@ -109,18 +117,19 @@ def add_search_result_register(
     if mode == "cpf":
         row.extend(
             [
-                data.get("nome", ""),
-                data.get("cpf", ""),
-                data.get("beneficio_tipo", ""),
-                data.get("url", ""),
+                data.get("nome", "Sem nome"),
+                data.get("cpf", "Sem CPF"),
+                data.get("beneficio_tipo", "Sem tipo de benefício"),
+                data.get("url", "Sem URL"),
             ]
         )
+    else:
         row.extend(
             [
-                data.get("nome", ""),
-                data.get("cnpj", ""),
-                data.get("grupo_natureza_jud", ""),
-                data.get("url", ""),
+                data.get("nome", "Sem nome"),
+                data.get("cnpj", "Sem CNPJ"),
+                data.get("grupo_natureza_jud", "Sem grupo de natureza jurídica"),
+                data.get("url", "Sem URL"),
             ]
         )
 

@@ -70,4 +70,4 @@ nav:
           - Schemas: crawler/schemas.md
           - Filters: crawler/filters.md
           - Elements Selectors: crawler/elements_selectors.md
-  - API: http://localhost:7000/docs
+  - API: https://desafio-mosqti-production.up.railway.app/docs

@@ -156,7 +156,7 @@ async def busca_cpf(
                 return Response(
                     content={
                         "data": result,
-                        "warning": "Os dados foram obtidos, mas não foi possível armazená-los no banco de dados."
+                        "warning": f"Os dados foram obtidos, mas não foi possível armazená-los no banco de dados. {str(e)}"
                     },
                     media_type="application/json",
                     status_code=200,

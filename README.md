@@ -17,3 +17,7 @@ A parte II do desafio também foi implementada, utilizando o FastAPI como framew
 
 Para fazer com que a aplicação seja menos suscetível a alterações no site, os seletores foram escolhidos de forma bem cuidadosa, evitando o uso de seletores muito genéricos. Além disso, diversas vezes optei por trabalhar com a URL diretamente, ao invés de interagir de fato com o DOM. Como exemplo, a filtragem de resultados é feita através de parâmetros na URL, ao invés de de fato interagir com o DOM.
 
+# Acessos
+URL da aplicação: [https://desafio-mosqti-production.up.railway.app/docs-mkdocs](https://desafio-mosqti-production.up.railway.app/docs-mkdocs)
+[Repositório](https://github.com/JEdmario16/desafio-mosqti)
+[Pasta no Google Drive com os dados coletados](https://drive.google.com/drive/u/0/folders/1LtnBW5gjG_yBacHyt70MtmSGLlFp9pII)
