@@ -26,10 +26,6 @@ curl -X 'GET' \
   -H 'accept: application/json'
   ```
 
-### Requisição para buscar CNPJ
-```bash
-
-
 # Acessos
 [URL da aplicação](https://desafio-mosqti-production.up.railway.app/docs-mkdocs)
 
