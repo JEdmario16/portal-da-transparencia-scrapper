@@ -1,6 +1,6 @@
 from enum import Enum
 
-from desafio_mosqti.core.filters import base_filter
+from scrapper.core.filters import base_filter
 
 
 class NaturezaJuridica(str, Enum):

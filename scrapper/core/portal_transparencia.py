@@ -8,16 +8,16 @@ from urllib.parse import urlparse
 from playwright.async_api import (Browser, BrowserContext, Page,
                                   async_playwright)
 
-from desafio_mosqti.core.crawlers import (ConsultDetails, DetailsLinks,
+from scrapper.core.crawlers import (ConsultDetails, DetailsLinks,
                                           Searcher, TabularDetails)
-from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
+from scrapper.core.filters import CNPJSearchFilter, CPFSearchFilter
+from scrapper.core.schemas.search_result import (CnpjSearchResult,
                                                        CpfSearchResult)
 
 if TYPE_CHECKING:
     from loguru import Logger
 
-    from desafio_mosqti.core.interfaces.base_details import BaseDetails
+    from scrapper.core.interfaces.base_details import BaseDetails
 
 # permite rodar o código em modo assíncrono no debugger
 import json
@@ -51,9 +51,9 @@ class PortalTransparencia:
 
     Exemplo: Realizando uma busca por CNPJ, sem extração de detalhes.
         ```python
-        from desafio_mosqti.core.portal_transparencia import PortalTransparencia
-        from desafio_mosqti.core.filters import CNPJSearchFilter
-        from desafio_mosqti.core.schemas.search_result import CnpjSearchResult
+        from scrapper.core.portal_transparencia import PortalTransparencia
+        from scrapper.core.filters import CNPJSearchFilter
+        from scrapper.core.schemas.search_result import CnpjSearchResult
         async def main():
             async with PortalTransparencia(headless=False) as portal:
                 cnpj_result = await portal.search(
@@ -86,9 +86,9 @@ class PortalTransparencia:
 
     Exemplo: Realizando uma busca por CPF e extraindo detalhes.
         ```python
-        from desafio_mosqti.core.portal_transparencia import PortalTransparencia
-        from desafio_mosqti.core.filters import CPFSearchFilter
-        from desafio_mosqti.core.schemas.search_result import CpfSearchResult
+        from scrapper.core.portal_transparencia import PortalTransparencia
+        from scrapper.core.filters import CPFSearchFilter
+        from scrapper.core.schemas.search_result import CpfSearchResult
 
 
         async def main():
@@ -229,7 +229,7 @@ class PortalTransparencia:
         self.headless = headless
 
         if not logger:
-            from desafio_mosqti.core.loger import logger as default_logger
+            from scrapper.core.loger import logger as default_logger
 
             logger = default_logger
 
@@ -332,6 +332,11 @@ class PortalTransparencia:
         await page.add_init_script(self.SCRIPT_INJECTION)
 
         self.pages.append(page)
+
+        self.logger.debug(
+            "New page created with random context",
+            extra={"contexts": len(self.contexts), "pages": len(self.pages)},
+        )
         return page
 
     async def search(
@@ -390,7 +395,8 @@ class PortalTransparencia:
 
                 details, err_count = (
                     await self.__extract_all_details_from_search_result_links(
-                        result.details_links
+                        result.details_links,
+                        retries=2
                     )
                 )
                 self.logger.debug(
@@ -415,6 +421,7 @@ class PortalTransparencia:
         errors = 0
         for op_name, link in search_result_links.items():
             for attempt in range(retries):
+                detail = {}
                 try:
                     should_raise_for_captcha = attempt < retries - 1
                     detail = await self.__extract_detail(
@@ -432,7 +439,9 @@ class PortalTransparencia:
             if detail:
                 details[op_name] = detail
 
-            if "error" in detail:
+                if "error" in detail:
+                    errors += 1
+            else:
                 errors += 1
         return details, errors
 
@@ -445,11 +454,15 @@ class PortalTransparencia:
     ):
         page = page or await self.__new_page()
         detail_page_class = await self.__discover_detail_page(url)
+        self.logger.debug(
+            f"Discovered detail page class: {detail_page_class.__name__ if detail_page_class else 'None'}",
+            extra={"url": url},
+        )
         if detail_page_class:
             async with detail_page_class(page=page) as detail_page_cls:
                 return await detail_page_cls.fetch(
                     url=url,
-                    recursive=True,
+                    recursive=False,
                     raise_for_captcha=should_raise_for_captcha,
                 )
 

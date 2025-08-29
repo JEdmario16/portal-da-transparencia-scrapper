@@ -1,6 +1,6 @@
 # Searcher
 
-::: desafio_mosqti.core.crawlers.searcher.Searcher
+::: scrapper.core.crawlers.searcher.Searcher
     options:
       show_if_full: true
       show_if_empty: false

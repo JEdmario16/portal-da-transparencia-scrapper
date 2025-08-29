@@ -1,6 +1,6 @@
-from desafio_mosqti.core.elements_selectors.selector import \
+from scrapper.core.elements_selectors.selector import \
     ConsultDetailsSelector
-from desafio_mosqti.core.interfaces.base_details import BaseDetails
+from scrapper.core.interfaces.base_details import BaseDetails
 
 from playwright.async_api import Page, ElementHandle
 
@@ -27,7 +27,7 @@ class ConsultDetails(BaseDetails):
 
     Exemplo de uso:
         ```python
-        from desafio_mosqti.core.crawlers.details.consult import ConsultDetails
+        from scrapper.core.crawlers.details.consult import ConsultDetails
 
         async def main():
             with async_playwright() as p:
@@ -60,7 +60,7 @@ class ConsultDetails(BaseDetails):
         Returns:
             list[dict]: Lista de registros coletados, cada registro representado como um dicionário.
         """
-
+        self.logger.info(f"Iniciando coleta de dados na URL: {url}")
         await self.page.goto(url)
 
         # Verifica se a página contém um captcha
@@ -72,7 +72,6 @@ class ConsultDetails(BaseDetails):
         data = await self.collect_data(
             self.page, include_header=True, recursive=recursive
         )
-        await self.page.close()
         return data
 
     async def collect_data(
@@ -81,6 +80,7 @@ class ConsultDetails(BaseDetails):
         include_header: bool = False,
         recursive: bool = False,
         set_max_results: bool = True,
+        deepth=1
     ) -> list[dict]:
         """
         Coleta os dados da tabela de uma página de consulta iterando sobre suas linhas.
@@ -112,6 +112,11 @@ class ConsultDetails(BaseDetails):
         # Coleta os dados da tabela
         body_data = await self.get_table_data(table)
         data.extend(body_data)
+        deepth += 1
+
+        if deepth > 10:
+            self.logger.warning("Profundidade máxima atingida na coleta de dados.")
+            return data
 
         # Se a consulta for profunda, coleta os dados de todas as páginas
         if recursive:
@@ -122,9 +127,11 @@ class ConsultDetails(BaseDetails):
             # Coleta os dados da próxima página
 
             next_page_data = await self.collect_data(
-                page, include_header, recursive, set_max_results=False
+                page, recursive=recursive, set_max_results=False, include_header=False, deepth=deepth
             )  # set_max_results=False para não repetir a configuração de resultados por página
             data.extend(next_page_data)
+            
+            self.logger.debug(f"Coletados {len(next_page_data)} registros da próxima página (Profundidade: {deepth})")
         return data
 
     async def get_table_headers(self, table: ElementHandle) -> list[str]:

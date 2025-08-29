@@ -3,9 +3,9 @@ from typing import Any
 
 from playwright.async_api import ElementHandle, Page, async_playwright
 
-from desafio_mosqti.core.elements_selectors.selector import \
+from scrapper.core.elements_selectors.selector import \
     TabularDetailsSelector
-from desafio_mosqti.core.interfaces.base_details import BaseDetails
+from scrapper.core.interfaces.base_details import BaseDetails
 
 
 class TabularDetails(BaseDetails):
@@ -220,7 +220,11 @@ class TabularDetails(BaseDetails):
                     await self.__extract_data_table(data_table_el)
                 )
 
-            data["evidence"] = await self.take_evidence(section)
+            if await section.is_visible():
+                # tira uma screenshot da seção visível
+                data["evidence"] = await self.take_evidence(section)
+            else:
+                data["evidence"] = None
             data[title] = inner_section_data
 
         return data

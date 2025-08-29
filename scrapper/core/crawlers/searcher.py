@@ -5,10 +5,10 @@ from typing import List, Literal
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
     ElementHandle, Locator, Page)
 
-from desafio_mosqti.core.elements_selectors.selector import SearcherSelector
-from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
-from desafio_mosqti.core.schemas.search_result import (CnpjSearchResult,
+from scrapper.core.elements_selectors.selector import SearcherSelector
+from scrapper.core.filters import CNPJSearchFilter, CPFSearchFilter
+from scrapper.core.interfaces.base_crawler import BaseCrawler
+from scrapper.core.schemas.search_result import (CnpjSearchResult,
                                                        CpfSearchResult)
 
 
@@ -17,7 +17,7 @@ class Searcher(BaseCrawler):
     Crawler para buscas no Portal da Transparência (Pessoa Física e Jurídica).
 
     Esta classe realiza consultas públicas por CPF ou CNPJ, aplicando filtros opcionais,
-    e retornando os resultados estruturados como instâncias de [CpfSearchResult][desafio_mosqti.core.schemas.search_result.CpfSearchResult] ou [CnpjSearchResult][desafio_mosqti.core.schemas.search_result.CnpjSearchResult].
+    e retornando os resultados estruturados como instâncias de [CpfSearchResult][scrapper.core.schemas.search_result.CpfSearchResult] ou [CnpjSearchResult][scrapper.core.schemas.search_result.CnpjSearchResult].
     O crawler é capaz de lidar com diferentes tipos de filtros, como natureza jurídica, município,
 
     Também é possível realizar a paginação dos resultados, limitar a quantidade de resultados, verificar
@@ -33,9 +33,9 @@ class Searcher(BaseCrawler):
 
     Exemplo de uso:
     ```python
-    from desafio_mosqti.core.crawlers.searcher import Searcher
-    from desafio_mosqti.core.filters import CNPJSearchFilter
-    from desafio_mosqti.core.schemas.search_result import CnpjSearchResult
+    from scrapper.core.crawlers.searcher import Searcher
+    from scrapper.core.filters import CNPJSearchFilter
+    from scrapper.core.schemas.search_result import CnpjSearchResult
     import asyncio
 
     async def main():

@@ -1,6 +1,6 @@
 # Portal Transparência
 
-::: desafio_mosqti.core.portal_transparencia.PortalTransparencia
+::: scrapper.core.portal_transparencia.PortalTransparencia
     options:
       show_if_full: true
       show_if_empty: false

@@ -2,7 +2,7 @@ import base64
 
 from playwright.async_api import ElementHandle
 
-from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
+from scrapper.core.interfaces.base_crawler import BaseCrawler
 
 
 class BaseDetails(BaseCrawler):

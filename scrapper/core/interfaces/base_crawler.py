@@ -20,7 +20,7 @@ class BaseCrawler(ABC):
 
     def __init__(self, page: Page, logger: Logger | None = None):
         if not logger:
-            from desafio_mosqti.core.loger import logger as default_logger
+            from scrapper.core.loger import logger as default_logger
 
             logger = default_logger
         self.logger = logger

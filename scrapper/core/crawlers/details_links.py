@@ -3,9 +3,9 @@ import asyncio
 from playwright.async_api import (  # type: ignore[import-not-found] # ignore missing stub
     ElementHandle, Page, async_playwright)
 
-from desafio_mosqti.core.elements_selectors.selector import \
+from scrapper.core.elements_selectors.selector import \
     DetailsLinksSelector
-from desafio_mosqti.core.interfaces.base_crawler import BaseCrawler
+from scrapper.core.interfaces.base_crawler import BaseCrawler
 
 
 class DetailsLinks(BaseCrawler):
@@ -24,8 +24,8 @@ class DetailsLinks(BaseCrawler):
     - "Processos Administrativos"
     ... etc
 
-    Esta classe pode ser combinada com `desafio_mosqti.core.crawlers.searcher` para coletar esses links de resultados de busca, e com
-    `desafio_mosqti.core.crawlers.details.consult` ou `desafio_mosqti.core.crawlers.tabular_details` (dependendo do layout da tela)
+    Esta classe pode ser combinada com `scrapper.core.crawlers.searcher` para coletar esses links de resultados de busca, e com
+    `scrapper.core.crawlers.details.consult` ou `scrapper.core.crawlers.tabular_details` (dependendo do layout da tela)
     para coletar os detalhes de cada link.
 
     """

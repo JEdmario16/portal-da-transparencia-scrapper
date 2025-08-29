@@ -7,11 +7,11 @@ from fastapi.responses import JSONResponse as Response
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 
-from desafio_mosqti.core.filters import CNPJSearchFilter, CPFSearchFilter
-from desafio_mosqti.core.filters.cnpj_search_filter import NaturezaJuridica, GrupoObjeto
-from desafio_mosqti.core.loger import logger as default_logger
-from desafio_mosqti.core.portal_transparencia import PortalTransparencia
-from desafio_mosqti.server.services import (add_search_result_register,
+from scrapper.core.filters import CNPJSearchFilter, CPFSearchFilter
+from scrapper.core.filters.cnpj_search_filter import NaturezaJuridica, GrupoObjeto
+from scrapper.core.loger import logger as default_logger
+from scrapper.core.portal_transparencia import PortalTransparencia
+from scrapper.server.services import (add_search_result_register,
                                             upload_details_to_google_drive)
 
 app = FastAPI()
@@ -75,7 +75,7 @@ async def generic_search(
         store_data_in_gdrive: Optional[bool] = False,
         **kwargs
 ):
-    async with PortalTransparencia(headless=True) as portal:
+    async with PortalTransparencia(headless=False) as portal:
         if query == "''" or query == '""' or not query:
             query = ""
 
@@ -88,9 +88,18 @@ async def generic_search(
                 search_result_limit=search_result_limit,
                 _filter=_filter,
             )
+            if not result:
+                return Response(
+                    content={
+                        "data": [],
+                        "warning": "Nenhum resultado encontrado para a consulta."
+                    },
+                    media_type="application/json",
+                    status_code=200,
+                )
             result = [
                 r.model_dump() if isinstance(r, BaseModel) else r
-                for r in result
+                for r in result if r
             ]
         except Exception as e:
             default_logger.error(f"Erro ao buscar {mode}: {e}")

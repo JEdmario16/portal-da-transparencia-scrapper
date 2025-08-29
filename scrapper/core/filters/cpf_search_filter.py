@@ -1,4 +1,4 @@
-from desafio_mosqti.core.filters import base_filter
+from scrapper.core.filters import base_filter
 
 
 class CPFSearchFilter(base_filter.BaseFilter):
